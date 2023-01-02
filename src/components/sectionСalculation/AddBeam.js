@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import styled from "styled-components";
 
-export default function AddBeam({draw}) {
-  const [height, setHeight] = useState("");
-  const [width, setWidth] = useState("");
-  const [s, setS] = useState("");
-  const [t, setT] = useState("");
+function AddBeam({ draw, className, children }) {
+  const [height, setHeight] = useState(100);
+  const [width, setWidth] = useState(55);
+  const [s, setS] = useState(4.1);
+  const [t, setT] = useState(5.7);
 
   function drawBeam(ctx, currentX, currentY) {
     ctx.beginPath();
@@ -25,32 +26,33 @@ export default function AddBeam({draw}) {
   }
 
   function convertToNumber(e, setState) {
-    if (e.target.value[e.target.value.length - 1] === ".") {
-      setState(e.target.value)
-    } else {
-      setState(parseFloat(e.target.value))
-    }
+    const value = e.target.value;
+    setState((value[value.length - 1] === ".") ? value : parseFloat(value))
   }
 
   return (
-    <li>
+    <li className={className}>
       <p>Двутавр</p>
+
       <label htmlFor="beamHeight">Высота (h):</label>
-      <input id="beamHeight" onChange={(e) => convertToNumber(e, setHeight)} value={height} />
+      <input id="beamHeight" onChange={(e) => convertToNumber(e, setHeight)} /* value={height} */ defaultValue={100} />
 
       <label htmlFor="beamWidth">Ширина полки (b):</label>
-      <input id="beamWidth" onChange={(e) => convertToNumber(e, setWidth)} value={width} />
+      <input id="beamWidth" onChange={(e) => convertToNumber(e, setWidth)} /* value={width} */ defaultValue={55} />
 
       <label htmlFor="beamS">Толщина стенки (s):</label>
-      <input id="beamS" onChange={(e) => convertToNumber(e, setS)} value={s} />
+      <input id="beamS" onChange={(e) => convertToNumber(e, setS)} /* value={s} */ defaultValue={4.1} />
 
       <label htmlFor="beamT">Толщина полки (t):</label>
-      <input id="beamT" onChange={(e) => convertToNumber(e, setT)} value={t} />
+      <input id="beamT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={5.7} />
         
-      <input type="button" value="Добавить" onClick={(e) => {
-        e.preventDefault();
-        draw(drawBeam)
-      }} />
+      <input type="button" value="Добавить" onClick={() => draw(drawBeam)} />
     </li>
   )
 }
+
+export const StyledAddBeam = styled(AddBeam)`
+  label, input {
+    display: block;
+  }
+`

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { StyledAddBeam } from "./AddBeam";
+import { StyledAddChannel } from "./AddChannel";
 
 function sectionСalculation({ className, children }) {
   const canvas = useRef(null);
@@ -20,7 +21,7 @@ function sectionСalculation({ className, children }) {
       <div>
         <ul>
           {<StyledAddBeam draw={draw} />}
-          <li>Швеллер</li>
+          {<StyledAddChannel draw={draw} />}
           <li>Угол</li>
           <li>Пластина</li>
         </ul>

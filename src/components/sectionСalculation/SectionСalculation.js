@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { StyledAddBeam } from "./AddBeam";
 import { StyledAddChannel } from "./AddChannel";
+import { StyledAddCorner } from "./AddCorner";
 
 function sectionСalculation({ className, children }) {
   const canvas = useRef(null);
@@ -22,7 +23,8 @@ function sectionСalculation({ className, children }) {
         <ul>
           {<StyledAddBeam draw={draw} />}
           {<StyledAddChannel draw={draw} />}
-          <li>Угол</li>
+          {<StyledAddCorner draw={draw} />}
+          {/* <li>Угол</li> */}
           <li>Пластина</li>
         </ul>
       </div>

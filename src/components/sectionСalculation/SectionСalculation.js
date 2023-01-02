@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { StyledAddBeam } from "./AddBeam";
 import { StyledAddChannel } from "./AddChannel";
 import { StyledAddCorner } from "./AddCorner";
+import { StyledAddRectangle } from "./AddRectangle";
 
 function sectionСalculation({ className, children }) {
   const canvas = useRef(null);
@@ -24,8 +25,7 @@ function sectionСalculation({ className, children }) {
           {<StyledAddBeam draw={draw} />}
           {<StyledAddChannel draw={draw} />}
           {<StyledAddCorner draw={draw} />}
-          {/* <li>Угол</li> */}
-          <li>Пластина</li>
+          {<StyledAddRectangle draw={draw} />}
         </ul>
       </div>
     </div>

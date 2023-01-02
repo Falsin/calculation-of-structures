@@ -1,19 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 import AddBeam from "./AddBeam";
 
-export default function sectionСalculation() {
+function sectionСalculation({ className, children }) {
   const canvas = useRef(null);
 
   function draw(func) {
     let ctx = canvas.current.getContext("2d");
+    ctx.strokeStyle = "white";
+
     let currentX = 10;
     let currentY = 10;
     func(ctx, currentX, currentY)
   }
 
   return (
-    <div style={{display: "flex"}}>
-      <canvas id="canvas" style={{border: "1px solid black", width: "150", height: "150"}} ref={canvas}></canvas>
+    <div className={className}>
+      <Canvas ref={canvas} />
       <div>
         <ul>
           {<AddBeam draw={draw} />}
@@ -25,3 +28,13 @@ export default function sectionСalculation() {
     </div>
   )
 }
+
+export const StyledSectionСalculation = styled(sectionСalculation)`
+  display: flex;
+`
+
+const Canvas = styled.canvas`
+  border: 1px solid black;
+  width: 150;
+  height: 150;
+`

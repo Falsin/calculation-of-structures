@@ -8,6 +8,9 @@ function AddChannel({ draw, className, children }) {
   const [t, setT] = useState(7);
 
   function drawChannel(ctx, currentX, currentY) {
+    ctx.save();
+    ctx.translate(-width/2, -height/2);
+
     ctx.beginPath();
     ctx.moveTo(currentX, currentY);
     ctx.lineTo(currentX += width, currentY);
@@ -19,6 +22,8 @@ function AddChannel({ draw, className, children }) {
     ctx.lineTo(currentX -= width, currentY);
     ctx.closePath();
     ctx.stroke();
+
+    ctx.restore();
   }
 
   function convertToNumber(e, setState) {

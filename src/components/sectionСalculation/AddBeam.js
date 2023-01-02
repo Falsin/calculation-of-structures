@@ -8,6 +8,9 @@ function AddBeam({ draw, className, children }) {
   const [t, setT] = useState(5.7);
 
   function drawBeam(ctx, currentX, currentY) {
+    ctx.save();
+    ctx.translate(-width/2, -height/2);
+
     ctx.beginPath();
     ctx.moveTo(currentX, currentY);
     ctx.lineTo(currentX += width, currentY);
@@ -23,6 +26,8 @@ function AddBeam({ draw, className, children }) {
     ctx.lineTo(currentX -= (width - s)/2, currentY);
     ctx.closePath();
     ctx.stroke();
+
+    ctx.restore();
   }
 
   function convertToNumber(e, setState) {

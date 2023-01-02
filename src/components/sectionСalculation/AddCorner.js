@@ -6,6 +6,9 @@ function AddCorner({ draw, className, children }) {
   const [t, setT] = useState(3);
 
   function drawCorner(ctx, currentX, currentY) {
+    ctx.save();
+    ctx.translate(-width/2, -width/2);
+
     ctx.beginPath();
     ctx.moveTo(currentX, currentY);
     ctx.lineTo(currentX += t, currentY);
@@ -15,6 +18,8 @@ function AddCorner({ draw, className, children }) {
     ctx.lineTo(currentX -= width, currentY);
     ctx.closePath();
     ctx.stroke();
+
+    ctx.restore();
   }
 
   function convertToNumber(e, setState) {

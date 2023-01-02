@@ -6,7 +6,17 @@ function AddRectangle({ draw, className, children }) {
   const [width, setWidth] = useState(50);
 
   function drawRectangle(ctx, currentX, currentY) {
-    ctx.strokeRect(currentX, currentY, width, height)
+    ctx.save();
+
+    ctx.translate(-width/2, -height/2);
+    ctx.strokeRect(currentX, currentY, width, height);
+
+    ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
+    ctx.fillText(`(${currentX+width}, ${currentY})`, currentX+width-10, currentY-5);
+    ctx.fillText(`(${currentX}, ${currentY+height})`, currentX-10, currentY+height+10);
+    ctx.fillText(`(${currentX+width}, ${currentY+height})`, currentX+width-15, currentY+height+10);
+
+    ctx.restore();
   }
 
   function convertToNumber(e, setState) {

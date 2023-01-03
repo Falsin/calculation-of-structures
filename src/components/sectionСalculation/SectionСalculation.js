@@ -7,34 +7,61 @@ import { StyledAddRectangle } from "./AddRectangle";
 
 function sectionСalculation({ className, children }) {
   const canvas = useRef(null);
+  const [arrayShapes, setArrayShapes] = useState([]);
+
+  const saveShape = (func) => setArrayShapes([...arrayShapes, func])
 
   useEffect(() => {
     const ratio = window.devicePixelRatio;
 
-    //здесь указывается расширение canvas 
-    //т.е ширина и высота умножается на ratio (соотношение пикселей на устройстве)
-    //изначально в canvas в ширине 600 содержится 600px
-    //но из-за расширения устройства, теперь в ширине равно 600 могут находится, например, 1200px
     canvas.current.width = 600 * ratio;
     canvas.current.height = 300 * ratio;
 
-    //здесь указываются размеры canvas
     canvas.current.style.width = "600px";
     canvas.current.style.height = "300px";
 
-    canvas.current.getContext("2d").scale(ratio, ratio);
+    let ctx = canvas.current.getContext("2d");
+    ctx.scale(ratio, ratio);
+    
+    ctx.strokeStyle = "white";
+    ctx.fillStyle = "white";
+    ctx.lineWidth = 2;
   }, [])
 
   function draw(func) {
-    let ctx = canvas.current.getContext("2d");
-    ctx.lineWidth = 2;
-    ctx.translate(canvas.current.width / 2, canvas.current.height / 2)
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
+    setArrayShapes([...arrayShapes, func])
+  }
 
-    let currentX = 0;
-    let currentY = 0;
-    func(ctx, currentX, currentY)
+  useEffect(() => {
+    draw()
+  }, [arrayShapes])
+
+  function draw() {
+    let ctx = canvas.current.getContext("2d");
+    ctx.save();
+
+    if (arrayShapes.length > 1) {
+      clearShapes();
+
+      const arrayXCoords = arrayShapes.map(elem => elem().coordX);
+      const arrayYCoords = arrayShapes.map(elem => elem().coordY);
+
+      const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];
+      const yLimits = [Math.min(...arrayYCoords), Math.max(...arrayYCoords)];
+
+      ctx.translate((canvas.current.width / 2) - (xLimits[0] + xLimits[1]) / 2, (canvas.current.height / 2) - (yLimits[0] + yLimits[1]) / 2);
+    } else if (arrayShapes.length === 1) {
+      ctx.translate(canvas.current.width / 2, canvas.current.height / 2);
+    } 
+
+    arrayShapes.forEach(item => item(ctx))
+    ctx.restore()
+  }
+
+  function clearShapes() {
+    let ctx = canvas.current.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
   }
 
   return (
@@ -42,10 +69,11 @@ function sectionСalculation({ className, children }) {
       <Canvas ref={canvas} />
       <div>
         <ul>
-          {<StyledAddBeam draw={draw} />}
+          {<StyledAddBeam saveShape={saveShape} />}
           {<StyledAddChannel draw={draw} />}
           {<StyledAddCorner draw={draw} />}
           {<StyledAddRectangle draw={draw} />}
+          <button onClick={clearShapes} >Delete</button>
         </ul>
       </div>
     </div>

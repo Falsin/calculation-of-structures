@@ -70,9 +70,9 @@ function sectionСalculation({ className, children }) {
       <div>
         <ul>
           {<StyledAddBeam saveShape={saveShape} />}
-          {<StyledAddChannel draw={draw} />}
-          {<StyledAddCorner draw={draw} />}
-          {<StyledAddRectangle draw={draw} />}
+          {<StyledAddChannel saveShape={saveShape} />}
+          {<StyledAddCorner saveShape={saveShape} />}
+          {<StyledAddRectangle saveShape={saveShape} />}
           <button onClick={clearShapes} >Delete</button>
         </ul>
       </div>

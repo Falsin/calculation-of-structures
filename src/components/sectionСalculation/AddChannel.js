@@ -1,29 +1,40 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-function AddChannel({ draw, className, children }) {
+function AddChannel({ saveShape, className, children }) {
   const [height, setHeight] = useState(50);
   const [width, setWidth] = useState(32);
   const [s, setS] = useState(4.4);
   const [t, setT] = useState(7);
+  const [coordX, setCoordX] = useState(0);
+  const [coordY, setCoordY] = useState(0);
 
-  function drawChannel(ctx, currentX, currentY) {
-    ctx.save();
-    ctx.translate(-width/2, -height/2);
+  function drawChannel(height, width, s, t, coordX, coordY) {
+    return function (ctx) {
+      if (ctx === undefined) {
+        return { height, width, s, t, coordX, coordY }
+      }
 
-    ctx.beginPath();
-    ctx.moveTo(currentX, currentY);
-    ctx.lineTo(currentX += width, currentY);
-    ctx.lineTo(currentX, currentY += t);
-    ctx.lineTo(currentX -= width-s, currentY);
-    ctx.lineTo(currentX, currentY += height-2*t);
-    ctx.lineTo(currentX += width-s, currentY);
-    ctx.lineTo(currentX, currentY += t);
-    ctx.lineTo(currentX -= width, currentY);
-    ctx.closePath();
-    ctx.stroke();
+      let currentX = coordX;
+      let currentY = coordY;
 
-    ctx.restore();
+      ctx.save();
+      ctx.translate(-width/2, -height/2);
+
+      ctx.beginPath();
+      ctx.moveTo(currentX, currentY);
+      ctx.lineTo(currentX += width, currentY);
+      ctx.lineTo(currentX, currentY += t);
+      ctx.lineTo(currentX -= width-s, currentY);
+      ctx.lineTo(currentX, currentY += height-2*t);
+      ctx.lineTo(currentX += width-s, currentY);
+      ctx.lineTo(currentX, currentY += t);
+      ctx.lineTo(currentX -= width, currentY);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.restore();
+    }
   }
 
   function convertToNumber(e, setState) {
@@ -47,7 +58,13 @@ function AddChannel({ draw, className, children }) {
       <label htmlFor="channelT">Толщина полки (t):</label>
       <input id="channelT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={50} />
         
-      <input type="button" value="Добавить" onClick={() => draw(drawChannel)} />
+      <div>
+        <p>Координаты</p>
+        <label>x <input value={coordX} onChange={(e) => convertToNumber(e, setCoordX)} /></label>
+        <label>y <input value={coordY} onChange={(e) => convertToNumber(e, setCoordY)} /></label>
+      </div>
+
+      <input type="button" value="Добавить" onClick={() => saveShape(drawChannel(height, width, s, t, coordX, coordY))} />
     </li>
   )
 }

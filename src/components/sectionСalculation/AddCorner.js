@@ -1,25 +1,36 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-function AddCorner({ draw, className, children }) {
+function AddCorner({ saveShape, className, children }) {
   const [width, setWidth] = useState(20);
   const [t, setT] = useState(3);
+  const [coordX, setCoordX] = useState(0);
+  const [coordY, setCoordY] = useState(0);
 
-  function drawCorner(ctx, currentX, currentY) {
-    ctx.save();
-    ctx.translate(-width/2, -width/2);
+  function drawCorner(width, t, coordX, coordY) {
+    return function (ctx) {
+      if (ctx === undefined) {
+        return { width, t, coordX, coordY }
+      }
 
-    ctx.beginPath();
-    ctx.moveTo(currentX, currentY);
-    ctx.lineTo(currentX += t, currentY);
-    ctx.lineTo(currentX, currentY += width-t);
-    ctx.lineTo(currentX += width-t, currentY);
-    ctx.lineTo(currentX, currentY += t);
-    ctx.lineTo(currentX -= width, currentY);
-    ctx.closePath();
-    ctx.stroke();
+      let currentX = coordX;
+      let currentY = coordY;
 
-    ctx.restore();
+      ctx.save();
+      ctx.translate(-width/2, -width/2);
+
+      ctx.beginPath();
+      ctx.moveTo(currentX, currentY);
+      ctx.lineTo(currentX += t, currentY);
+      ctx.lineTo(currentX, currentY += width-t);
+      ctx.lineTo(currentX += width-t, currentY);
+      ctx.lineTo(currentX, currentY += t);
+      ctx.lineTo(currentX -= width, currentY);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.restore();
+    }
   }
 
   function convertToNumber(e, setState) {
@@ -37,7 +48,13 @@ function AddCorner({ draw, className, children }) {
       <label htmlFor="cornerT">Толщина полки (t):</label>
       <input id="cornerT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={3} />
         
-      <input type="button" value="Добавить" onClick={() => draw(drawCorner)} />
+      <div>
+        <p>Координаты</p>
+        <label>x <input value={coordX} onChange={(e) => convertToNumber(e, setCoordX)} /></label>
+        <label>y <input value={coordY} onChange={(e) => convertToNumber(e, setCoordY)} /></label>
+      </div>
+
+      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner(width, t, coordX, coordY))} />
     </li>
   )
 }

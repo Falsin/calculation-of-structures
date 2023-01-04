@@ -12,7 +12,7 @@ function AddBeam({ saveShape, className, children }) {
   function drawBeam(height, width, s, t, coordX, coordY) {
     return function (ctx) {
       if (ctx === undefined) {
-        return { height, width, s, t, coordX, coordY }
+        return { height, width, s, t, coordX, coordY, type: "beam", square: "10.32" }
       }
 
       let currentX = coordX;
@@ -23,13 +23,21 @@ function AddBeam({ saveShape, className, children }) {
 
       ctx.beginPath();
       ctx.moveTo(currentX, currentY);
+      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
+
       ctx.lineTo(currentX += width, currentY);
+      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
+
       ctx.lineTo(currentX, currentY += t);
       ctx.lineTo(currentX -= (width - s)/2, currentY);
       ctx.lineTo(currentX, currentY += (height - 2*t));
       ctx.lineTo(currentX += (width - s)/2, currentY);
       ctx.lineTo(currentX, currentY += t);
+      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY+10);
+
       ctx.lineTo(currentX -= width, currentY);
+      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY+10);
+
       ctx.lineTo(currentX, currentY -= t);
       ctx.lineTo(currentX += (width - s)/2, currentY);
       ctx.lineTo(currentX, currentY -= (height - 2*t));

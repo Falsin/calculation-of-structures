@@ -64,6 +64,19 @@ function sectionСalculation({ className, children }) {
     ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
   }
 
+  async function send() {
+    const request = await fetch("http://localhost:3000/flatSection/", {
+      method: "PUT",
+      body: JSON.stringify(arrayShapes.map(item => item())),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+
+    const response = await request.json();
+    console.log(response)
+  }
+
   return (
     <div className={className}>
       <Canvas ref={canvas} />
@@ -75,6 +88,8 @@ function sectionСalculation({ className, children }) {
           {<StyledAddRectangle saveShape={saveShape} />}
           <button onClick={clearShapes} >Delete</button>
         </ul>
+
+        <button onClick={send}>рассчитать</button>
       </div>
     </div>
   )

@@ -4,48 +4,45 @@ import styled from "styled-components";
 function AddBeam({ saveShape, className, children }) {
   const [height, setHeight] = useState(100);
   const [width, setWidth] = useState(55);
-  const [s, setS] = useState(4.1);
-  const [t, setT] = useState(5.7);
+  const [s, setS] = useState(4.5);
+  const [t, setT] = useState(7.2);
   const [coordX, setCoordX] = useState(0);
   const [coordY, setCoordY] = useState(0);
 
   function drawBeam(height, width, s, t, coordX, coordY) {
-    return function (ctx) {
-      if (ctx === undefined) {
-        return { height, width, s, t, coordX, coordY, type: "beam", square: "10.32" }
+    const that = this;
+    return function (svg, startPointX, startPointY) {
+      if (svg === undefined) {
+        return { height, width, s, t, coordX, coordY, type: "beam", square: 10.32, ix: 198 }
       }
 
-      let currentX = coordX;
-      let currentY = coordY;
+      const xmlns = "http://www.w3.org/2000/svg";
+      const currentX = startPointX + coordX;
+      const currentY = startPointY + coordY;
 
-      ctx.save();
-      ctx.translate(-width/2, -height/2);
+      const path = document.createElementNS(xmlns, "path");
+      path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${width} v ${t} h -${(width - s)/2} v ${height-2*t} h ${(width - s)/2} v ${t} h -${width} v -${t} h ${(width - s)/2} v -${height - 2*t} h -${(width - s)/2} z`)
+      path.setAttributeNS(null, "fill", "white");
+      path.setAttributeNS(null, "stroke", "black");
+      path.setAttributeNS(null, "transform", `translate(-${width/2}, -${height/2})`);
 
-      ctx.beginPath();
-      ctx.moveTo(currentX, currentY);
-      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
+      svg.current.appendChild(path);
 
-      ctx.lineTo(currentX += width, currentY);
-      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
+      const coords = [
+        {x: coordX, y: coordY}, 
+        {x: coordX + width, y: coordY},
+        {x: coordX + width, y: coordY + height},
+        {x: coordX, y: coordY + height},
+      ]
 
-      ctx.lineTo(currentX, currentY += t);
-      ctx.lineTo(currentX -= (width - s)/2, currentY);
-      ctx.lineTo(currentX, currentY += (height - 2*t));
-      ctx.lineTo(currentX += (width - s)/2, currentY);
-      ctx.lineTo(currentX, currentY += t);
-      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY+10);
-
-      ctx.lineTo(currentX -= width, currentY);
-      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY+10);
-
-      ctx.lineTo(currentX, currentY -= t);
-      ctx.lineTo(currentX += (width - s)/2, currentY);
-      ctx.lineTo(currentX, currentY -= (height - 2*t));
-      ctx.lineTo(currentX -= (width - s)/2, currentY);
-      ctx.closePath();
-      ctx.stroke();
-
-      ctx.restore();
+      coords.forEach(item => {
+        const text = document.createElementNS(xmlns, "text");
+        text.setAttributeNS(null, "x", `${startPointX + item.x - width/2}`);
+        text.setAttributeNS(null, "y", `${startPointY + item.y - height/2}`);
+        text.setAttributeNS(null, "font-size", "10px");
+        text.textContent = `(${item.x}, ${item.y})`;
+        svg.current.appendChild(text)
+      })
     }
   }
 
@@ -65,10 +62,10 @@ function AddBeam({ saveShape, className, children }) {
       <input id="beamWidth" onChange={(e) => convertToNumber(e, setWidth)} /* value={width} */ defaultValue={55} />
 
       <label htmlFor="beamS">Толщина стенки (s):</label>
-      <input id="beamS" onChange={(e) => convertToNumber(e, setS)} /* value={s} */ defaultValue={4.1} />
+      <input id="beamS" onChange={(e) => convertToNumber(e, setS)} /* value={s} */ defaultValue={4.5} />
 
       <label htmlFor="beamT">Толщина полки (t):</label>
-      <input id="beamT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={5.7} />
+      <input id="beamT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={7.2} />
 
       <div>
         <p>Координаты</p>

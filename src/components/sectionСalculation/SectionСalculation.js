@@ -6,62 +6,28 @@ import { StyledAddCorner } from "./AddCorner";
 import { StyledAddRectangle } from "./AddRectangle";
 
 function sectionСalculation({ className, children }) {
-  const canvas = useRef(null);
+  const svg = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
 
-  const saveShape = (func) => setArrayShapes([...arrayShapes, func])
-
-  useEffect(() => {
-    const ratio = window.devicePixelRatio;
-
-    canvas.current.width = 600 * ratio;
-    canvas.current.height = 300 * ratio;
-
-    canvas.current.style.width = "600px";
-    canvas.current.style.height = "300px";
-
-    let ctx = canvas.current.getContext("2d");
-    ctx.scale(ratio, ratio);
-    
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    ctx.lineWidth = 2;
-  }, [])
-
-  function draw(func) {
-    setArrayShapes([...arrayShapes, func])
-  }
+  const saveShape = (func) => setArrayShapes([...arrayShapes, func]);
 
   useEffect(() => {
     draw()
   }, [arrayShapes])
 
   function draw() {
-    let ctx = canvas.current.getContext("2d");
-    ctx.save();
+    svg.current.replaceChildren();
 
-    if (arrayShapes.length > 1) {
-      clearShapes();
+    let style = getComputedStyle(svg.current);
+    const centerX = parseFloat(style.width) / 2;
+    const centerY = parseFloat(style.height) / 2;
 
-      const arrayXCoords = arrayShapes.map(elem => elem().coordX);
-      const arrayYCoords = arrayShapes.map(elem => elem().coordY);
+    const arrayXCoords = arrayShapes.map(elem => elem().coordX);
+    const arrayYCoords = arrayShapes.map(elem => elem().coordY);
 
-      const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];
-      const yLimits = [Math.min(...arrayYCoords), Math.max(...arrayYCoords)];
-
-      ctx.translate((canvas.current.width / 2) - (xLimits[0] + xLimits[1]) / 2, (canvas.current.height / 2) - (yLimits[0] + yLimits[1]) / 2);
-    } else if (arrayShapes.length === 1) {
-      ctx.translate(canvas.current.width / 2, canvas.current.height / 2);
-    } 
-
-    arrayShapes.forEach(item => item(ctx))
-    ctx.restore()
-  }
-
-  function clearShapes() {
-    let ctx = canvas.current.getContext("2d");
-
-    ctx.clearRect(0, 0, canvas.current.width, canvas.current.height)
+    const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];
+    const yLimits = [Math.min(...arrayYCoords), Math.max(...arrayYCoords)];
+    arrayShapes.forEach(shape => shape(svg, centerX - ((xLimits[0] + xLimits[1])/2), centerY - ((yLimits[0] + yLimits[1])/2)))
   }
 
   async function send() {
@@ -79,14 +45,13 @@ function sectionСalculation({ className, children }) {
 
   return (
     <div className={className}>
-      <Canvas ref={canvas} />
+      <SVG ref={svg} />
       <div>
         <ul>
           {<StyledAddBeam saveShape={saveShape} />}
           {<StyledAddChannel saveShape={saveShape} />}
           {<StyledAddCorner saveShape={saveShape} />}
           {<StyledAddRectangle saveShape={saveShape} />}
-          <button onClick={clearShapes} >Delete</button>
         </ul>
 
         <button onClick={send}>рассчитать</button>
@@ -99,8 +64,12 @@ export const StyledSectionСalculation = styled(sectionСalculation)`
   display: flex;
 `
 
+const SVG = styled.svg`
+  width: 600px;
+  height: 300px;
+  border: 1px solid black;
+`
+
 const Canvas = styled.canvas`
   border: 1px solid black;
-/*   width: 600px;
-  height: 300px; */
 `

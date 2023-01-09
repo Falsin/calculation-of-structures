@@ -1,19 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { saveBeams, saveCorners } from "../../redux/sortamentSlice";
 import styled from "styled-components";
 
 function AddBeam({ saveShape, className, children }) {
-  const [height, setHeight] = useState(100);
-  const [width, setWidth] = useState(55);
-  const [s, setS] = useState(4.5);
-  const [t, setT] = useState(7.2);
   const [coordX, setCoordX] = useState(0);
   const [coordY, setCoordY] = useState(0);
+  const [beam, setBeam] = useState(null);
 
-  function drawBeam(height, width, s, t, coordX, coordY) {
-    const that = this;
+  const beams = useSelector(state => state.sortament.beams)
+  const dispatch = useDispatch();
+
+  async function getBeams() {
+    const request = await fetch("http://localhost:3000/beams/");
+    const response = await request.json();
+    dispatch(saveBeams(JSON.parse(response)))
+  }
+
+  useEffect(() => {
+    getBeams()
+  }, [])
+
+  function drawBeam(beam, coordX, coordY) {
+    const {h, b, s, t} = beam;
+
     return function (svg, startPointX, startPointY) {
       if (svg === undefined) {
-        return { height, width, s, t, coordX, coordY, type: "beam", square: 10.32, ix: 198 }
+        return {...beam, coordX, coordY, type: "beam"}
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
@@ -21,24 +34,24 @@ function AddBeam({ saveShape, className, children }) {
       const currentY = startPointY + coordY;
 
       const path = document.createElementNS(xmlns, "path");
-      path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${width} v ${t} h -${(width - s)/2} v ${height-2*t} h ${(width - s)/2} v ${t} h -${width} v -${t} h ${(width - s)/2} v -${height - 2*t} h -${(width - s)/2} z`)
+      path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform", `translate(-${width/2}, -${height/2})`);
+      path.setAttributeNS(null, "transform", `translate(-${b/2}, -${h/2})`);
 
       svg.current.appendChild(path);
 
       const coords = [
         {x: coordX, y: coordY}, 
-        {x: coordX + width, y: coordY},
-        {x: coordX + width, y: coordY + height},
-        {x: coordX, y: coordY + height},
+        {x: coordX + b, y: coordY},
+        {x: coordX + b, y: coordY + h},
+        {x: coordX, y: coordY + h},
       ]
 
       coords.forEach(item => {
         const text = document.createElementNS(xmlns, "text");
-        text.setAttributeNS(null, "x", `${startPointX + item.x - width/2}`);
-        text.setAttributeNS(null, "y", `${startPointY + item.y - height/2}`);
+        text.setAttributeNS(null, "x", `${startPointX + item.x - b/2}`);
+        text.setAttributeNS(null, "y", `${startPointY + item.y - h/2}`);
         text.setAttributeNS(null, "font-size", "10px");
         text.textContent = `(${item.x}, ${item.y})`;
         svg.current.appendChild(text)
@@ -55,17 +68,13 @@ function AddBeam({ saveShape, className, children }) {
     <li className={className}>
       <p>Двутавр</p>
 
-      <label htmlFor="beamHeight">Высота (h):</label>
-      <input id="beamHeight" onChange={(e) => convertToNumber(e, setHeight)} /* value={height} */ defaultValue={100} />
-
-      <label htmlFor="beamWidth">Ширина полки (b):</label>
-      <input id="beamWidth" onChange={(e) => convertToNumber(e, setWidth)} /* value={width} */ defaultValue={55} />
-
-      <label htmlFor="beamS">Толщина стенки (s):</label>
-      <input id="beamS" onChange={(e) => convertToNumber(e, setS)} /* value={s} */ defaultValue={4.5} />
-
-      <label htmlFor="beamT">Толщина полки (t):</label>
-      <input id="beamT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={7.2} />
+      <select onChange={(e) => {
+        const beam = beams.find(beam => beam._id === e.target.value);
+        setBeam(beam);
+      }}>
+        <option>Выберите № двутавра</option>
+        {beams.map(beam => <option value={beam._id} key={beam._id}>{beam.no}</option>)}
+      </select>
 
       <div>
         <p>Координаты</p>
@@ -73,7 +82,7 @@ function AddBeam({ saveShape, className, children }) {
         <label>y <input value={coordY} onChange={(e) => convertToNumber(e, setCoordY)} /></label>
       </div>
         
-      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam(height, width, s, t, coordX, coordY))} />
+      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam(beam, coordX, coordY))} />
     </li>
   )
 }

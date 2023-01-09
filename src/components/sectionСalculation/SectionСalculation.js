@@ -30,7 +30,9 @@ function sectionСalculation({ className, children }) {
     arrayShapes.forEach(shape => shape(svg, centerX - ((xLimits[0] + xLimits[1])/2), centerY - ((yLimits[0] + yLimits[1])/2)))
   }
 
-  async function send() {
+  async function submit(e) {
+    e.preventDefault();
+
     const request = await fetch("http://localhost:3000/flatSection/", {
       method: "PUT",
       body: JSON.stringify(arrayShapes.map(item => item())),
@@ -46,7 +48,7 @@ function sectionСalculation({ className, children }) {
   return (
     <div className={className}>
       <SVG ref={svg} />
-      <div>
+      <form onSubmit={submit}>
         <ul>
           {<StyledAddBeam saveShape={saveShape} />}
           {<StyledAddChannel saveShape={saveShape} />}
@@ -54,8 +56,8 @@ function sectionСalculation({ className, children }) {
           {<StyledAddRectangle saveShape={saveShape} />}
         </ul>
 
-        <button onClick={send}>рассчитать</button>
-      </div>
+        <button>рассчитать</button>
+      </form>
     </div>
   )
 }

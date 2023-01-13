@@ -1,24 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { saveBeams, saveCorners } from "../../redux/sortamentSlice";
 import styled from "styled-components";
+import { fetchBeams, selectAllBeams } from "../../redux/sortamentSlice";
 
 function AddBeam({ saveShape, className, children }) {
   const [coordX, setCoordX] = useState(0);
   const [coordY, setCoordY] = useState(0);
   const [beam, setBeam] = useState(null);
 
-  const beams = useSelector(state => state.sortament.beams)
+  const beams = useSelector(selectAllBeams);
+  const status = useSelector(state => state.sortament.status);
   const dispatch = useDispatch();
 
-  async function getBeams() {
-    const request = await fetch("http://localhost:3000/beams/");
-    const response = await request.json();
-    dispatch(saveBeams(JSON.parse(response)))
-  }
-
   useEffect(() => {
-    getBeams()
+    if (status === "idle") {
+      dispatch(fetchBeams())
+    }
   }, [])
 
   function drawBeam(beam, coordX, coordY) {

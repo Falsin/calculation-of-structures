@@ -22,8 +22,15 @@ function sectionСalculation({ className, children }) {
     const centerX = parseFloat(style.width) / 2;
     const centerY = parseFloat(style.height) / 2;
 
-    const arrayXCoords = arrayShapes.map(elem => elem().coordX);
-    const arrayYCoords = arrayShapes.map(elem => elem().coordY);
+    const arrayXCoords = arrayShapes.reduce((prevVal, currVal) => {
+      const shapeObj = currVal();
+      return [...prevVal, shapeObj.coordX, shapeObj.coordX + shapeObj.b]
+    }, []);
+
+    const arrayYCoords = arrayShapes.reduce((prevVal, currVal) => {
+      const shapeObj = currVal();
+      return [...prevVal, shapeObj.coordY, shapeObj.coordY + shapeObj.h]
+    }, [])
 
     const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];
     const yLimits = [Math.min(...arrayYCoords), Math.max(...arrayYCoords)];

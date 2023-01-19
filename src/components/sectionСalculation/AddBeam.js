@@ -34,7 +34,6 @@ function AddBeam({ saveShape, className, children }) {
       path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform", `translate(-${b/2}, -${h/2})`);
 
       svg.current.appendChild(path);
 
@@ -47,8 +46,8 @@ function AddBeam({ saveShape, className, children }) {
 
       coords.forEach(item => {
         const text = document.createElementNS(xmlns, "text");
-        text.setAttributeNS(null, "x", `${startPointX + item.x - b/2}`);
-        text.setAttributeNS(null, "y", `${startPointY + item.y - h/2}`);
+        text.setAttributeNS(null, "x", `${startPointX + item.x}`);
+        text.setAttributeNS(null, "y", `${startPointY + item.y}`);
         text.setAttributeNS(null, "font-size", "10px");
         text.textContent = `(${item.x}, ${item.y})`;
         svg.current.appendChild(text)

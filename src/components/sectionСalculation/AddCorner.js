@@ -1,35 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
+import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import styled from "styled-components";
 
 function AddCorner({ saveShape, className, children }) {
-  const [width, setWidth] = useState(20);
-  const [t, setT] = useState(3);
   const [coordX, setCoordX] = useState(0);
   const [coordY, setCoordY] = useState(0);
+  const [corner, setCorner] = useState(null); 
 
-  function drawCorner(width, t, coordX, coordY) {
-    return function (ctx) {
-      if (ctx === undefined) {
-        return { width, t, coordX, coordY }
+  const equalAnglesCorners = useSelector(selectAllEqualAnglesCorners);
+  const equalAnglesCornersStatus = useSelector(state => state.equalAnglesCorners.status);
+
+  const unequalAnglesCorners = useSelector(selectAllUnequalAnglesCorners);
+  const unequalAnglesCornersStatus = useSelector(state => state.unequalAnglesCorners.status);
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (equalAnglesCornersStatus === "idle" || unequalAnglesCornersStatus === "idle") {
+      dispatch(fetchEqualAnglesCorners())
+      dispatch(fetchUnequalAnglesCorners())
+    }
+  }, [])
+
+  function drawCorner(corner, coordX, coordY) {
+    const { b, B = b, t } = corner;
+    
+    return function (svg, startPointX, startPointY) {
+      if (svg === undefined) {
+        return { ...corner, coordX, coordY, type: "corner" }
       }
 
-      let currentX = coordX;
-      let currentY = coordY;
+      const xmlns = "http://www.w3.org/2000/svg";
+      const currentX = startPointX + coordX;
+      const currentY = startPointY + coordY;
 
-      ctx.save();
-      ctx.translate(-width/2, -width/2);
+      const path = document.createElementNS(xmlns, "path");
+      path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${t} v ${B - t} h ${b - t} v ${t} h ${-b} z`)
+      path.setAttributeNS(null, "fill", "white");
+      path.setAttributeNS(null, "stroke", "black");
 
-      ctx.beginPath();
-      ctx.moveTo(currentX, currentY);
-      ctx.lineTo(currentX += t, currentY);
-      ctx.lineTo(currentX, currentY += width-t);
-      ctx.lineTo(currentX += width-t, currentY);
-      ctx.lineTo(currentX, currentY += t);
-      ctx.lineTo(currentX -= width, currentY);
-      ctx.closePath();
-      ctx.stroke();
-
-      ctx.restore();
+      svg.current.appendChild(path);
     }
   }
 
@@ -42,11 +54,23 @@ function AddCorner({ saveShape, className, children }) {
     <li className={className}>
       <p>Уголок</p>
 
-      <label htmlFor="cornerWidth">Ширина полки (b):</label>
-      <input id="cornerWidth" onChange={(e) => convertToNumber(e, setWidth)} /* value={width} */ defaultValue={20} />
+      <label htmlFor="equalAngles">Равнополочные уголки</label>
+      <select onChange={(e) => {
+        const corner = equalAnglesCorners.find(elem => elem._id === e.target.value);
+        setCorner(corner);
+      }}>
+        <option id="equalAngles">Выберите № уголка</option>
+        {equalAnglesCorners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
+      </select>
 
-      <label htmlFor="cornerT">Толщина полки (t):</label>
-      <input id="cornerT" onChange={(e) => convertToNumber(e, setT)} /* value={t} */ defaultValue={3} />
+      <label htmlFor="unequalAngles">Неравнополочные уголки</label>
+      <select onChange={(e) => {
+        const corner = unequalAnglesCorners.find(elem => elem._id === e.target.value);
+        setCorner(corner);
+      }}>
+        <option id="unequalAngles">Выберите № уголка</option>
+        {unequalAnglesCorners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
+      </select>
         
       <div>
         <p>Координаты</p>
@@ -54,7 +78,7 @@ function AddCorner({ saveShape, className, children }) {
         <label>y <input value={coordY} onChange={(e) => convertToNumber(e, setCoordY)} /></label>
       </div>
 
-      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner(width, t, coordX, coordY))} />
+      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner(corner, coordX, coordY))} />
     </li>
   )
 }

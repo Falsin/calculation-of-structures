@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchShapes, selectAllBeams } from "../../redux/sortamentSlice";
 import styled from "styled-components";
+import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 
 function AddBeam({ saveShape, className, children }) {
   const [coordX, setCoordX] = useState(0);
@@ -9,12 +9,12 @@ function AddBeam({ saveShape, className, children }) {
   const [beam, setBeam] = useState(null);
 
   const beams = useSelector(selectAllBeams);
-  const status = useSelector(state => state.sortament.status);
+  const status = useSelector(state => state.beams.status);
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(fetchShapes("beams"))
+      dispatch(fetchBeams());
     }
   }, [])
 

@@ -29,7 +29,17 @@ function sectionСalculation({ className, children }) {
 
     const arrayYCoords = arrayShapes.reduce((prevVal, currVal) => {
       const shapeObj = currVal();
-      return [...prevVal, shapeObj.coordY, shapeObj.coordY + shapeObj.h]
+      let height;
+
+      if (shapeObj.h) {
+        height = shapeObj.h;
+      } else if (shapeObj.B) {
+        height = shapeObj.B
+      } else {
+        height = shapeObj.b;
+      }
+
+      return [...prevVal, shapeObj.coordY, shapeObj.coordY + height]
     }, [])
 
     const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];

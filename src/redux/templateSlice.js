@@ -30,7 +30,7 @@ export const shapeSlice = (shapeName, fetchFunc) => {
 
 export const fetchShapes = (type, shape) => {
   return createAsyncThunk(type, async () => {
-    const request = await fetch(`http://localhost:3000/${shape}/`);
+    const request = await fetch(`http://localhost:3000/sortament/${shape}/`);
     return await request.json();
   })
 }

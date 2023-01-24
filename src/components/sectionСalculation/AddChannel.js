@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchShapes, selectAllChannels } from "../../redux/sortamentSlice";
+import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import styled from "styled-components";
 
 function AddChannel({ saveShape, className, children }) {
@@ -9,12 +9,12 @@ function AddChannel({ saveShape, className, children }) {
   const [channel, setChannel] = useState(null);
 
   const channels = useSelector(selectAllChannels);
-  const status = useSelector(state => state.sortament.status);
+  const status = useSelector(state => state.channels.status);
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(fetchShapes("channels"))
+      dispatch(fetchChannels())
     }
   })
 
@@ -34,7 +34,6 @@ function AddChannel({ saveShape, className, children }) {
       path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform", `translate(-${b/2}, -${h/2})`);
     
       svg.current.appendChild(path);
     }
@@ -54,7 +53,6 @@ function AddChannel({ saveShape, className, children }) {
         setChannel(channel);
       }}>
         <option>Выберите № швеллера</option>
-        {console.log(channels)}
         {channels.map(channel => <option value={channel._id} key={channel._id}>{channel.no}</option>)}
       </select>
         

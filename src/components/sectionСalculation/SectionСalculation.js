@@ -24,6 +24,11 @@ function sectionСalculation({ className, children }) {
 
     const arrayXCoords = arrayShapes.reduce((prevVal, currVal) => {
       const shapeObj = currVal();
+
+      if (shapeObj.degree == 90) {
+        return [...prevVal, shapeObj.coordX, shapeObj.coordX + shapeObj.h]
+      }
+
       return [...prevVal, shapeObj.coordX, shapeObj.coordX + shapeObj.b]
     }, []);
 
@@ -37,6 +42,10 @@ function sectionСalculation({ className, children }) {
         height = shapeObj.B
       } else {
         height = shapeObj.b;
+      }
+
+      if (shapeObj.degree == 90) {
+        return [...prevVal, shapeObj.coordY, shapeObj.coordY + shapeObj.b]
       }
 
       return [...prevVal, shapeObj.coordY, shapeObj.coordY + height]
@@ -59,7 +68,6 @@ function sectionСalculation({ className, children }) {
     })
 
     const response = await request.json();
-    console.log(response)
   }
 
   return (

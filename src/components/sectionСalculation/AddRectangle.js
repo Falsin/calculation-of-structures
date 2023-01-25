@@ -7,26 +7,22 @@ function AddRectangle({ saveShape, className, children }) {
   const [coordX, setCoordX] = useState(0);
   const [coordY, setCoordY] = useState(0);
 
-  function drawRectangle(width, height, coordX, coordY) {
-    return function (ctx) {
-      if (ctx === undefined) {
-        return { width, height, coordX, coordY }
+  function drawRectangle(b, h, coordX, coordY) {
+    return function (svg, startPointX, startPointY) {
+      if (svg === undefined) {
+        return { b, h, coordX, coordY, type: "rectangle" }
       }
 
-      let currentX = coordX;
-      let currentY = coordY;
+      const xmlns = "http://www.w3.org/2000/svg";
+      const currentX = startPointX + coordX;
+      const currentY = startPointY + coordY;
 
-      ctx.save();
+      const path = document.createElementNS(xmlns, "path");
+      path.setAttributeNS(null, "d", `M ${currentX}, ${currentY} h ${b} v ${h} h ${-b} z`);
+      path.setAttributeNS(null, "fill", "white");
+      path.setAttributeNS(null, "stroke", "black");
 
-      ctx.translate(-width/2, -height/2);
-      ctx.strokeRect(currentX, currentY, width, height);
-
-      ctx.fillText(`(${currentX}, ${currentY})`, currentX-10, currentY-5);
-      ctx.fillText(`(${currentX+width}, ${currentY})`, currentX+width-10, currentY-5);
-      ctx.fillText(`(${currentX}, ${currentY+height})`, currentX-10, currentY+height+10);
-      ctx.fillText(`(${currentX+width}, ${currentY+height})`, currentX+width-15, currentY+height+10);
-
-      ctx.restore();
+      svg.current.appendChild(path);
     }
   }
 
@@ -57,7 +53,7 @@ function AddRectangle({ saveShape, className, children }) {
 }
 
 export const StyledAddRectangle = styled(AddRectangle)`
-  label, input {
-    display: block;
+  div input {
+    width: 40px;
   }
 `

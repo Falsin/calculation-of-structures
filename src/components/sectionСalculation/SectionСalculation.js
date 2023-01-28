@@ -22,17 +22,18 @@ function sectionСalculation({ className, children }) {
     const centerX = parseFloat(style.width) / 2;
     const centerY = parseFloat(style.height) / 2;
 
-    const arrayXCoords = arrayShapes.reduce((prevVal, currVal) => {
+    const arrayCentersCoordsX = arrayShapes.reduce((prevVal, currVal) => {
       const shapeObj = currVal();
+      console.log(shapeObj)
 
-      if (shapeObj.degree == 90) {
-        return [...prevVal, shapeObj.coordX, shapeObj.coordX + shapeObj.h]
+      if (shapeObj.degree == 90 || shapeObj.degree == 270) {
+        return [...prevVal, (shapeObj.coordX + shapeObj.coordX + shapeObj.h)/2]
       }
 
-      return [...prevVal, shapeObj.coordX, shapeObj.coordX + shapeObj.b]
+      return [...prevVal, (shapeObj.coordX + shapeObj.coordX + shapeObj.b)/2]
     }, []);
 
-    const arrayYCoords = arrayShapes.reduce((prevVal, currVal) => {
+    const arrayCentersCoordsY = arrayShapes.reduce((prevVal, currVal) => {
       const shapeObj = currVal();
       let height;
 
@@ -44,16 +45,21 @@ function sectionСalculation({ className, children }) {
         height = shapeObj.b;
       }
 
-      if (shapeObj.degree == 90) {
-        return [...prevVal, shapeObj.coordY, shapeObj.coordY + shapeObj.b]
+      if (shapeObj.degree == 90 || shapeObj.degree == 270) {
+        return [...prevVal, (shapeObj.coordY + shapeObj.coordY + shapeObj.b)/2]
       }
 
-      return [...prevVal, shapeObj.coordY, shapeObj.coordY + height]
+      return [...prevVal, (shapeObj.coordY + shapeObj.coordY + height)/2]
     }, [])
 
-    const xLimits = [Math.min(...arrayXCoords), Math.max(...arrayXCoords)];
-    const yLimits = [Math.min(...arrayYCoords), Math.max(...arrayYCoords)];
-    arrayShapes.forEach(shape => shape(svg, centerX - ((xLimits[0] + xLimits[1])/2), centerY - ((yLimits[0] + yLimits[1])/2)))
+    const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
+    const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
+    const leftXLimit = centerX - (xLimits[0] + xLimits[1])/2;
+    const topYLimit = centerY - (yLimits[0] + yLimits[1])/2;
+
+    arrayShapes.forEach((shape, id) => {
+      shape(svg, leftXLimit + arrayCentersCoordsX[id], topYLimit + arrayCentersCoordsY[id]);
+    })
   }
 
   async function submit(e) {

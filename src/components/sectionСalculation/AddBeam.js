@@ -4,8 +4,8 @@ import styled from "styled-components";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 
 function AddBeam({ saveShape, className, children }) {
-  const [coordX, setCoordX] = useState(0);
-  const [coordY, setCoordY] = useState(0);
+  const [centerX, setCenterX] = useState(0);
+  const [centerY, setCenterY] = useState(0);
   const [beam, setBeam] = useState(null);
   const [degree, setDegree] = useState(0);
 
@@ -19,49 +19,41 @@ function AddBeam({ saveShape, className, children }) {
     }
   }, [])
 
-  function drawBeam(beam, coordX, coordY, degree) {
+  function drawBeam(beam, centerX, centerY, degree) {
     const {h, b, s, t} = beam;
 
-    return function (svg, centerX, centerY) {
+    return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return {...beam, coordX, coordY, type: "beam", degree}
+        return {...beam, centerX, centerY, type: "beam", degree}
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
 
       const path = document.createElementNS(xmlns, "path");
-      path.setAttributeNS(null, "d", `M ${centerX - b/2}, ${centerY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
+      path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "id", "beam");
-      path.setAttributeNS(null, "transform", `rotate(${degree}, ${centerX}, ${centerY})`);
+      path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
+      path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
 
       svg.current.appendChild(path);
 
       let coords;
-      let startPointX;
-      let startPointY;
 
-      if (degree == 90 || degree == 90) {
+      if (degree == 90 || degree == 270) {
         coords = [
-          {x: coordX, y: coordY}, 
-          {x: coordX + h, y: coordY },
-          {x: coordX + h, y: coordY + b},
-          {x: coordX, y: coordY + b}
+          {x: centerX - h/2, y: centerY + b/2}, 
+          {x: centerX + h/2, y: centerY + b/2},
+          {x: centerX - h/2, y: centerY - b/2},
+          {x: centerX + h/2, y: centerY - b/2},
         ]
-
-        startPointX = centerX - h/2;
-        startPointY = centerY - b/2;
       } else {
         coords = [
-          {x: coordX, y: coordY}, 
-          {x: coordX + b, y: coordY},
-          {x: coordX + b, y: coordY + h},
-          {x: coordX, y: coordY + h},
+          {x: centerX - b/2, y: centerY + h/2}, 
+          {x: centerX + b/2, y: centerY + h/2},
+          {x: centerX - b/2, y: centerY - h/2},
+          {x: centerX + b/2, y: centerY - h/2}
         ]
-
-        startPointX = centerX - b/2;
-        startPointY = centerY - h/2;
       }
 
       coords.forEach((item, id) => {
@@ -69,8 +61,10 @@ function AddBeam({ saveShape, className, children }) {
 
         text.setAttributeNS(null, "font-size", "10px");
         text.setAttributeNS(null, "text-anchor", "middle");
-        text.setAttributeNS(null, "x", `${startPointX + item.x}`);
-        text.setAttributeNS(null, "y", `${startPointY + item.y}`);
+        text.setAttributeNS(null, "x", `${relativeCenterX + item.x}`);
+        text.setAttributeNS(null, "y", `${relativeCenterY + item.y}`);
+        text.setAttributeNS(null, "transform-origin", `${relativeCenterX + item.x} ${relativeCenterY + item.y}`);
+        text.setAttributeNS(null, "transform", `scale(1 -1)`);
 
         text.textContent = `(${item.x}, ${item.y})`;
 
@@ -96,16 +90,16 @@ function AddBeam({ saveShape, className, children }) {
       </select>
 
       <div>
-        <p>Координаты</p>
-        <label>x <input value={coordX} onChange={(e) => setCoordX(e.target.value)} /></label>
-        <label>y <input value={coordY} onChange={(e) => setCoordY(e.target.value)} /></label>
+        <p>Координаты центра тяжести</p>
+        <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
+        <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
       </div>
 
       <button onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
       <Preview degree={degree} />
         
-      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam(beam, parseFloat(coordX), parseFloat(coordY), degree))} />
+      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam(beam, parseFloat(centerX), parseFloat(centerY), degree))} />
     </li>
   )
 }

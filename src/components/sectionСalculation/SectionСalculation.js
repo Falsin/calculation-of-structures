@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { selectAllEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import { StyledAddBeam } from "./AddBeam";
 import { StyledAddChannel } from "./AddChannel";
-import { StyledAddCorner } from "./AddCorner";
+import { StyledAddEqualAnglesCorners } from "./AddEqualAnglesCorners";
 import { StyledAddRectangle } from "./AddRectangle";
 
 function sectionСalculation({ className, children }) {
@@ -19,46 +20,33 @@ function sectionСalculation({ className, children }) {
     svg.current.replaceChildren();
 
     let style = getComputedStyle(svg.current);
-    const centerX = parseFloat(style.width) / 2;
-    const centerY = parseFloat(style.height) / 2;
+    const centerXWindow = parseFloat(style.width) / 2;
+    const centerYWindow = parseFloat(style.height) / 2;
 
-    const arrayCentersCoordsX = arrayShapes.reduce((prevVal, currVal) => {
-      const shapeObj = currVal();
-      console.log(shapeObj)
+    const arrayCentersCoordsX = arrayShapes.map(shapeFunc => {
+      const shapeObj = shapeFunc();
 
-      if (shapeObj.degree == 90 || shapeObj.degree == 270) {
-        return [...prevVal, (shapeObj.coordX + shapeObj.coordX + shapeObj.h)/2]
-      }
+      return shapeObj.centerX;
+    })
 
-      return [...prevVal, (shapeObj.coordX + shapeObj.coordX + shapeObj.b)/2]
-    }, []);
+    const arrayCentersCoordsY = arrayShapes.map(shapeFunc => {
+      const shapeObj = shapeFunc();
 
-    const arrayCentersCoordsY = arrayShapes.reduce((prevVal, currVal) => {
-      const shapeObj = currVal();
-      let height;
+      return shapeObj.centerY;
+    })
 
-      if (shapeObj.h) {
-        height = shapeObj.h;
-      } else if (shapeObj.B) {
-        height = shapeObj.B
-      } else {
-        height = shapeObj.b;
-      }
-
-      if (shapeObj.degree == 90 || shapeObj.degree == 270) {
-        return [...prevVal, (shapeObj.coordY + shapeObj.coordY + shapeObj.b)/2]
-      }
-
-      return [...prevVal, (shapeObj.coordY + shapeObj.coordY + height)/2]
-    }, [])
+    console.log(arrayCentersCoordsY)
 
     const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
     const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
-    const leftXLimit = centerX - (xLimits[0] + xLimits[1])/2;
-    const topYLimit = centerY - (yLimits[0] + yLimits[1])/2;
+    const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
+    const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
+    //const topYLimit = centerYWindow - (yLimits[0] + yLimits[1])/2;
+
+    //console.log(topYLimit)
 
     arrayShapes.forEach((shape, id) => {
-      shape(svg, leftXLimit + arrayCentersCoordsX[id], topYLimit + arrayCentersCoordsY[id]);
+      shape(svg, leftXLimit + arrayCentersCoordsX[id], bottomYLimit + arrayCentersCoordsY[id]);
     })
   }
 
@@ -78,12 +66,12 @@ function sectionСalculation({ className, children }) {
 
   return (
     <div className={className}>
-      <SVG ref={svg} />
+      <SVG ref={svg} transform="scale(1, -1)" />
       <form onSubmit={submit}>
         <ul>
           {<StyledAddBeam saveShape={saveShape} />}
           {<StyledAddChannel saveShape={saveShape} />}
-          {<StyledAddCorner saveShape={saveShape} />}
+          {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
           {<StyledAddRectangle saveShape={saveShape} />}
         </ul>
 
@@ -101,6 +89,7 @@ const SVG = styled.svg`
   width: 600px;
   height: 300px;
   border: 1px solid black;
+  //transform: scale(1, -1);
 `
 
 const Canvas = styled.canvas`

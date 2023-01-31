@@ -19,15 +19,22 @@ function AddChannel({ saveShape, className, children }) {
     }
   })
 
-  function drawChannel(channel, centerX, centerY, degree) {
-    const { h, b, s, t, z0 } = channel;
+  function drawChannel() {
+    const channelInstance = {
+      ...channel,
+      centerX: parseFloat(centerX), 
+      centerY: parseFloat(centerY),
+      degree,
+      type: "channel" 
+    }
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return { ...channel, centerX, centerY, type: "channel", degree }
+        return channelInstance;
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
+      const { h, b, s, t, z0, degree } = channelInstance;
 
       const path = document.createElementNS(xmlns, "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - z0*10}, ${relativeCenterY - h/2} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`)
@@ -71,7 +78,7 @@ function AddChannel({ saveShape, className, children }) {
 
       <Preview degree={degree} />
 
-      <input type="button" value="Добавить" onClick={() => saveShape(drawChannel(channel, centerX, centerY, degree))} />
+      <input type="button" value="Добавить" onClick={() => saveShape(drawChannel())} />
     </li>
   )
 }
@@ -91,7 +98,7 @@ function Preview({degree}) {
   })
 
   return (
-    <svg ref={svg}>
+    <svg ref={svg} style={{display: "block"}}>
       {!channel 
         ? null 
         : <path 

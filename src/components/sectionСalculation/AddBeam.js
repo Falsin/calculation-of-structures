@@ -19,15 +19,22 @@ function AddBeam({ saveShape, className, children }) {
     }
   }, [])
 
-  function drawBeam(beam, centerX, centerY, degree) {
-    const {h, b, s, t} = beam;
+  function drawBeam() {
+    const beamInstance = {
+      ...beam,
+      centerX: parseFloat(centerX), 
+      centerY: parseFloat(centerY),
+      degree,
+      type: "beam" 
+    }
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return {...beam, centerX, centerY, type: "beam", degree}
+        return beamInstance;
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
+      const {h, b, s, t, degree, centerX, centerY} = beamInstance;
 
       const path = document.createElementNS(xmlns, "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
@@ -99,7 +106,7 @@ function AddBeam({ saveShape, className, children }) {
 
       <Preview degree={degree} />
         
-      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam(beam, parseFloat(centerX), parseFloat(centerY), degree))} />
+      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam())} />
     </li>
   )
 }
@@ -119,7 +126,7 @@ function Preview({degree}) {
   })
 
   return (
-    <svg ref={svg}>
+    <svg ref={svg} style={{display: "block"}}>
       {!beam 
         ? null 
         : <path 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import styled from "styled-components";
@@ -20,14 +20,21 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
     }
   }, [])
 
-  function drawCorner(corner, centerX, centerY) {
-    const { b, t, z0 } = corner;
+  function drawCorner() {
+    const equalAnglesCornerInstance = {
+      ...corner,
+      centerX: parseFloat(centerX), 
+      centerY: parseFloat(centerY),
+      degree, 
+      type: "equalAnglesCorner",
+    }
     
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return { ...corner, centerX, centerY, type: "corner" }
+        return equalAnglesCornerInstance;
       }
       const xmlns = "http://www.w3.org/2000/svg";
+      const { b, t, z0, degree } = equalAnglesCornerInstance;
 
       const path = document.createElementNS(xmlns, "path");
     
@@ -64,8 +71,39 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
 
       <button onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner(corner, parseFloat(centerX), parseFloat(centerY), degree))} />
+      <Preview degree={degree} />
+
+      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner())} />
     </li>
+  )
+}
+
+function Preview({degree}) {
+  const svg = useRef(null);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+  
+  const equalAngleCorner = useSelector(state => state.equalAnglesCorners.equalAnglesCorners[16]);
+  const {b, t} = !equalAngleCorner ? {} : equalAngleCorner;
+
+  useEffect(() => {
+    const style = getComputedStyle(svg.current);
+    setWidth(parseFloat(style.width))
+    setHeight(parseFloat(style.height))
+  })
+
+  return (
+    <svg ref={svg} style={{display: "block"}}>
+      {!equalAngleCorner 
+        ? null 
+        : <path 
+          d={`M ${width/2 - b/2}, ${height/2 - b/2} h ${t} v ${b - t} h ${b - t} v ${t} h ${-b} z`} 
+          transform={`rotate(${degree}, ${width/2}, ${height/2})`}
+          fill="white" 
+          stroke="black"  
+        />
+      }
+    </svg>
   )
 }
 

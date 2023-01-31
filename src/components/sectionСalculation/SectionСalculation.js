@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { selectAllEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import { StyledAddBeam } from "./AddBeam";
 import { StyledAddChannel } from "./AddChannel";
 import { StyledAddEqualAnglesCorners } from "./AddEqualAnglesCorners";
+import { StyledAddUnequalAnglesCorners } from "./AddUnequalAnglesCorners";
 import { StyledAddRectangle } from "./AddRectangle";
+
 
 function sectionСalculation({ className, children }) {
   const svg = useRef(null);
@@ -35,15 +36,10 @@ function sectionСalculation({ className, children }) {
       return shapeObj.centerY;
     })
 
-    console.log(arrayCentersCoordsY)
-
     const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
     const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
     const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
     const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
-    //const topYLimit = centerYWindow - (yLimits[0] + yLimits[1])/2;
-
-    //console.log(topYLimit)
 
     arrayShapes.forEach((shape, id) => {
       shape(svg, leftXLimit + arrayCentersCoordsX[id], bottomYLimit + arrayCentersCoordsY[id]);
@@ -72,6 +68,7 @@ function sectionСalculation({ className, children }) {
           {<StyledAddBeam saveShape={saveShape} />}
           {<StyledAddChannel saveShape={saveShape} />}
           {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
+          {<StyledAddUnequalAnglesCorners saveShape={saveShape} />}
           {<StyledAddRectangle saveShape={saveShape} />}
         </ul>
 
@@ -88,10 +85,5 @@ export const StyledSectionСalculation = styled(sectionСalculation)`
 const SVG = styled.svg`
   width: 600px;
   height: 300px;
-  border: 1px solid black;
-  //transform: scale(1, -1);
-`
-
-const Canvas = styled.canvas`
   border: 1px solid black;
 `

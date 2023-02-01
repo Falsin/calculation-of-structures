@@ -42,7 +42,7 @@ function sectionСalculation({ className, children }) {
     const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
 
     arrayShapes.forEach((shape, id) => {
-      shape(svg, leftXLimit + arrayCentersCoordsX[id], bottomYLimit + arrayCentersCoordsY[id]);
+      shape(svg, leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]), bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]));
     })
   }
 

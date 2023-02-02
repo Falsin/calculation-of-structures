@@ -6,8 +6,21 @@ import { StyledAddEqualAnglesCorners } from "./AddEqualAnglesCorners";
 import { StyledAddUnequalAnglesCorners } from "./AddUnequalAnglesCorners";
 import { StyledAddRectangle } from "./AddRectangle";
 
+import { MathComponent } from "mathjax-react";
 
 function sectionСalculation({ className, children }) {
+  const [result, setResult] = useState(null)
+
+
+  return (
+    <div>
+      <StyledInputingData setResult={setResult} />
+      {!result ? null : <OutputingData result={result} />}
+    </div>
+  )
+}
+
+function InputingData({className, children, setResult}) {
   const svg = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
 
@@ -58,6 +71,7 @@ function sectionСalculation({ className, children }) {
     })
 
     const response = await request.json();
+    setResult(response)
   }
 
   return (
@@ -78,8 +92,23 @@ function sectionСalculation({ className, children }) {
   )
 }
 
-export const StyledSectionСalculation = styled(sectionСalculation)`
+const StyledInputingData = styled(InputingData)`
   display: flex;
+`
+
+function OutputingData({result}) {
+  console.log(result)
+  return (
+    <div>
+      <MathComponent tex={result.mathString} />
+    </div>
+  )
+}
+
+export const StyledSectionСalculation = styled(sectionСalculation)`
+  & > div {
+    display: flex;
+  }
 `
 
 const SVG = styled.svg`
@@ -87,3 +116,7 @@ const SVG = styled.svg`
   height: 300px;
   border: 1px solid black;
 `
+
+function Report({result}) {
+  return <MathComponent tex={result} />
+}

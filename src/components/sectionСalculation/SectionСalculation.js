@@ -11,7 +11,6 @@ import { MathComponent } from "mathjax-react";
 function sectionСalculation({ className, children }) {
   const [result, setResult] = useState(null)
 
-
   return (
     <div>
       <StyledInputingData setResult={setResult} />
@@ -100,7 +99,10 @@ function OutputingData({result}) {
   console.log(result)
   return (
     <div>
-      <MathComponent tex={result.mathString} />
+      <MathComponent tex={result.centerOfGravity.mathStringX} />
+      <MathComponent tex={result.centerOfGravity.mathStringY} />
+      <MathComponent tex={result.Ix.mathString} />
+      <MathComponent tex={result.Iy.mathString} />
     </div>
   )
 }

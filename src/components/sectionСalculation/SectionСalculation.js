@@ -12,13 +12,13 @@ function sectionСalculation({ className, children }) {
 
   return (
     <div>
-      <StyledInputingData setResult={setResult} />
+      <StyledInputingData setResult={setResult} result={result} />
       {!result ? null : <StyledOutputingData result={result} />}
     </div>
   )
 }
 
-function InputingData({className, children, setResult}) {
+function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
 
@@ -26,7 +26,7 @@ function InputingData({className, children, setResult}) {
 
   useEffect(() => {
     draw()
-  }, [arrayShapes])
+  }, [arrayShapes, result])
 
   function draw() {
     svg.current.replaceChildren();
@@ -53,67 +53,52 @@ function InputingData({className, children, setResult}) {
     const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
 
     arrayShapes.forEach((shape, id) => {
-      shape(svg, leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]), bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]));
-      
-      drawAxes(svg, id, leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]), bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]));
+      const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
+      const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
+
+      if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
+        drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, "Yc");
+      }
+
+      if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
+        drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, "Xc");
+      }
+
+      shape(svg, relativeCenterX, relativeCenterY);
+    
+      drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.2, relativeCenterX, parseFloat(style.height)*0.8, `Y${id+1}`);
+      drawAxis(svg, parseFloat(style.width)*0.2, relativeCenterY, parseFloat(style.width)*0.8, relativeCenterY, `X${id+1}`);
     })
   }
 
-  function drawAxes(svg, id, centerX, centerY) {
-    let style = getComputedStyle(svg.current);
+  function drawAxis(svg, x1, y1, x2, y2, nameAxis) {
     const xmlns = "http://www.w3.org/2000/svg";
 
-    const defs = document.createElementNS(xmlns, "defs");
-
-    const marker = document.createElementNS(xmlns, "marker");
-    marker.setAttributeNS(null, "id", `arrow`);
-    marker.setAttributeNS(null, "markerWidth", `7`);
-    marker.setAttributeNS(null, "markerHeight", `10`);
-    marker.setAttributeNS(null, "refX", `3.5`);
-    marker.setAttributeNS(null, "refY", `0`);
+    const line = document.createElementNS(xmlns, "path");
+    line.setAttributeNS(null, "d", `M ${x1}, ${y1} L ${x2} ${y2}`);
+    line.setAttributeNS(null, "stroke", "black");
 
     const triangle = document.createElementNS(xmlns, "path");
-    triangle.setAttributeNS(null, "d", `M 0, 0 l 3.5, 10 l 3.5, -10 z`);
+    triangle.setAttributeNS(null, "d", `M ${x2}, ${y2} h -3.5 l 3.5, 10 l 3.5, -10 h -3.5`);
 
-    const verticalAxis = document.createElementNS(xmlns, "path");
-    verticalAxis.setAttributeNS(null, "d", `M ${centerX}, 50 v ${parseFloat(style.height)-100}`);
-    verticalAxis.setAttributeNS(null, "marker-end", "url(#arrow)");
-    verticalAxis.setAttributeNS(null, "stroke", "black");
+    if (x1 != x2) {
+      triangle.setAttributeNS(null, "transform", `rotate(-90, ${x2}, ${y2})`);
+    }
 
     const text = document.createElementNS(xmlns, "text");
-    text.setAttributeNS(null, "x", `${centerX-15}`);
-    text.setAttributeNS(null, "y", `${50+parseFloat(style.height)-100}`);
-    text.setAttributeNS(null, "transform-origin", `${centerX} ${50+parseFloat(style.height)-100}`);
+
+    text.setAttributeNS(null, "x", `${x2}`);
+    text.setAttributeNS(null, "y", `${y2}`);
+    text.setAttributeNS(null, "transform-origin", `${x2-5} ${y2+5}`);
     text.setAttributeNS(null, "transform", `scale(1, -1)`);
     text.setAttributeNS(null, "text-anchor", `middle`);
-    text.textContent = `Y${id+1}`
+    text.textContent = nameAxis;
 
-    const horisontalAxis =  document.createElementNS(xmlns, "path");
-    horisontalAxis.setAttributeNS(null, "id", "horisontalAxis");
-    horisontalAxis.setAttributeNS(null, "d", `M ${centerX}, 50 v ${parseFloat(style.height)-100}`);
-    horisontalAxis.setAttributeNS(null, "marker-end", "url(#arrow)");
-    horisontalAxis.setAttributeNS(null, "stroke", "black");
-    horisontalAxis.setAttributeNS(null, "transform", `rotate(-90, ${centerX}, ${centerY})`);
-    const text1 = document.createElementNS(xmlns, "text");
-    text1.setAttributeNS(null, "text-anchor", `middle`);
-    text1.setAttributeNS(null, "x", `${centerX}`);
-    text1.setAttributeNS(null, "y", `${centerY}`);
-    text1.setAttributeNS(null, "transform-origin", `${centerX} ${centerY}`);
-    text1.setAttributeNS(null, "transform", `scale(1 -1) translate(${(50+parseFloat(style.height)-100-centerY)} -5)`);
-  
-    text1.textContent = `X${id+1}`;
-
-    svg.current.appendChild(defs);
-    defs.appendChild(marker);
-    marker.appendChild(triangle);
-    svg.current.appendChild(verticalAxis);
+    svg.current.appendChild(line);
+    svg.current.appendChild(triangle);
     svg.current.appendChild(text);
-    svg.current.appendChild(horisontalAxis);
-    svg.current.appendChild(text1)
   }
   
-
-
   async function submit(e) {
     e.preventDefault();
 
@@ -126,7 +111,7 @@ function InputingData({className, children, setResult}) {
     })
 
     const response = await request.json();
-    setResult(response)
+    setResult(response);
   }
 
   return (

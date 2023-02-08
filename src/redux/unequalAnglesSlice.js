@@ -1,4 +1,3 @@
-//unequalAngles
 import { fetchShapes, shapeSlice } from "./templateSlice";
 
 export const fetchUnequalAnglesCorners = fetchShapes("unequalAnglesCorners/fetchUnequalAnglesCorners", "unequalAngles");

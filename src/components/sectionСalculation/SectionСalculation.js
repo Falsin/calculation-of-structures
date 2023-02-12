@@ -81,16 +81,16 @@ function InputingData({className, children, setResult, result}) {
       let obj;
 
       if (result.degree.value <= 45 && result.degree.value >= -45) {
-        obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.Ix.value > result.Iy.value ? 'U' : 'V'}`);
+        obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V'}`);
         rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
       
-        obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.Ix.value > result.Iy.value ? 'V' : 'U'}`);
+        obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U'}`);
         rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
       } else {
-        obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.Ix.value > result.Iy.value ? 'V' : 'U'}`);
+        obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U'}`);
         rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
       
-        obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.Ix.value > result.Iy.value ? 'U' : 'V'}`);
+        obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V'}`);
         rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
       }
     }
@@ -168,6 +168,7 @@ function InputingData({className, children, setResult, result}) {
     })
 
     const response = await request.json();
+    console.log(response)
     setResult(response);
   }
 
@@ -207,9 +208,10 @@ function OutputingData({result, className, children}) {
 
           <li>
             <p>Найдем величины осевых и центробежных моментов инерции сечения относительно центральных осей Xc Yc:</p>
-            <div>{result.Ix.mathString}</div>
-            <div>{result.Iy.mathString}</div>
-            <div>{result.Ixy.mathString}</div>
+            {result.moments.information.map(elem => <div>{elem}</div>)}
+            <div>{result.moments.Ix.mathString}</div>
+            <div>{result.moments.Iy.mathString}</div>
+            <div>{result.moments.Ixy.mathString}</div>
           </li>
 
           <li>
@@ -235,7 +237,7 @@ function OutputingData({result, className, children}) {
                   относительно которой центральный момент инерции сечения больше.</p>
                 <p>Выполним проверку по равенству:</p>
                 <div>{`\\(I_{max}+I_{min}=I_x + I_y\\)`}</div>
-                <div>{`\\(${result.Imax.value}+${result.Imin.value}=${result.Ix.value} + ${result.Iy.value}\\)`}</div>
+                <div>{`\\(${result.Imax.value}+${result.Imin.value}=${result.moments.Ix.value} + ${result.moments.Iy.value}\\)`}</div>
                 <p>Следовательно, задача решена верно.</p>
               </li>
           }
@@ -262,33 +264,3 @@ const StyledOutputingData = styled(OutputingData)`
     font-size: 140%;
   }
 `
-
-      /* if (result.Ix.value > result.Iy.value) {
-        if (result.degree.value > 45 || result.degree.value < -45) {
-          obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `V`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-          obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `U`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-        } else {
-          obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `U`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-          obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `V`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-        }
-      } else {
-        if (result.degree.value > 45 || result.degree.value < -45) {
-          obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `U`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-          obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `V`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-        } else {
-          obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `V`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-          obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `U`);
-          rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-        }
-      } */

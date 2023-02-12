@@ -17,7 +17,6 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    console.log("hello")
     if (cornersStatus === "idle") {
       dispatch(fetchUnequalAnglesCorners())
     }

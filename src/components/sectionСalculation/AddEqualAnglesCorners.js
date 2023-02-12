@@ -27,6 +27,7 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
       centerY: parseFloat(centerY),
       degree, 
       type: "equalAnglesCorner",
+      Iy: corner.Ix
     }
     
     return function (svg, relativeCenterX, relativeCenterY) {
@@ -69,7 +70,7 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
         <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
       </div>
 
-      <button onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
       <Preview degree={degree} />
 

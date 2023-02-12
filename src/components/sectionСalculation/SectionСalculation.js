@@ -60,11 +60,11 @@ function InputingData({className, children, setResult, result}) {
       shape(svg, relativeCenterX, relativeCenterY);
 
       if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
-        drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, "Yсл");
+        drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.85, "Yсл");
       }
 
       if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
-        drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, "Xсл");
+        drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.85, relativeCenterY, "Xсл");
       }
 
       drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.2, relativeCenterX, parseFloat(style.height)*0.8, `Y${id+1}`);
@@ -125,7 +125,7 @@ function InputingData({className, children, setResult, result}) {
 
     const text = document.createElementNS(xmlns, "text");
     text.setAttributeNS(null, "x", `${x2}`);
-    text.setAttributeNS(null, "y", `${y2-5}`);
+    text.setAttributeNS(null, "y", `${y2-10}`);
     text.setAttributeNS(null, "transform-origin", `${x2} ${y2}`);
     text.setAttributeNS(null, 'transform', `scale(1, -1)`);
     text.setAttributeNS(null, "text-anchor", `middle`);
@@ -141,7 +141,7 @@ function InputingData({className, children, setResult, result}) {
     line.setAttributeNS(null, 'transform', `rotate(${degree}, ${x}, ${y})`);
 
     const rad = (90 - (degree >= 0 ? degree : degree * -1)) * Math.PI / 180;
-    const sinX = rad - rad**3/6;
+    const sinX = rad**5/120 - rad**3/6 + rad;
     const lineLength = (orientation == "vertical") ? endPoint - y : endPoint - x;
 
     let alphaY = sinX * lineLength;
@@ -151,8 +151,8 @@ function InputingData({className, children, setResult, result}) {
       text.setAttributeNS(null, 'x', `${degree > 0 ? x-alphaX : x+alphaX}`);
       text.setAttributeNS(null, 'y', `${y+alphaY}`);
     } else {
-      text.setAttributeNS(null, 'y', `${degree > 0 ? y-alphaX : y+alphaX}`);
       text.setAttributeNS(null, 'x', `${x+alphaY}`);
+      text.setAttributeNS(null, 'y', `${degree > 0 ? y-alphaX-8 : y+alphaX-8}`);
     }
   }
   
@@ -252,8 +252,8 @@ export const StyledSectionСalculation = styled(sectionСalculation)`
 `
 
 const SVG = styled.svg`
-  width: 600px;
-  height: 300px;
+  width: 800px;
+  height: 600px;
   border: 1px solid black;
 `
 

@@ -28,8 +28,8 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
       centerX: parseFloat(centerX), 
       centerY: parseFloat(centerY),
       degree, 
-      type: "equalAnglesCorner",
-      activeCase
+      type: "unequalAnglesCorner",
+      activeCase,
     }
     
     return function (svg, relativeCenterX, relativeCenterY) {

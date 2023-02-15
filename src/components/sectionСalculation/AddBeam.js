@@ -45,35 +45,43 @@ function AddBeam({ saveShape, className, children }) {
 
       svg.current.appendChild(path);
 
-      let coords;
-
-      if (degree == 90 || degree == 270) {
-        coords = [
-          {x: centerX - h/2, y: centerY + b/2}, 
-          {x: centerX + h/2, y: centerY + b/2},
-          {x: centerX - h/2, y: centerY - b/2},
-          {x: centerX + h/2, y: centerY - b/2},
-        ]
-      } else {
-        coords = [
-          {x: centerX - b/2, y: centerY + h/2}, 
-          {x: centerX + b/2, y: centerY + h/2},
-          {x: centerX - b/2, y: centerY - h/2},
-          {x: centerX + b/2, y: centerY - h/2}
-        ]
-      }
+      let coords = [
+        {x: -b/2, y: h/2},
+        {x: b/2, y: h/2},
+        {x: -b/2, y: -h/2},
+        {x: b/2, y: -h/2} 
+      ]
 
       coords.forEach((item, id) => {
         const text = document.createElementNS(xmlns, "text");
-
         text.setAttributeNS(null, "font-size", "10px");
         text.setAttributeNS(null, "text-anchor", "middle");
-        text.setAttributeNS(null, "x", `${relativeCenterX + item.x}`);
-        text.setAttributeNS(null, "y", `${relativeCenterY + item.y}`);
-        text.setAttributeNS(null, "transform-origin", `${relativeCenterX + item.x} ${relativeCenterY + item.y}`);
+      
+        const triangleHypotenuse = Math.sqrt(item.y**2 + item.x**2);
+        const tgx = (item.y < 0 ? -item.y : item.y) / (item.x < 0 ? -item.x : item.x);
+        const arctg = Math.atan(tgx)*180/Math.PI;
+
+        let degreeFromStartPoint
+
+        if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
+          degreeFromStartPoint = 180 - arctg;
+        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
+          degreeFromStartPoint = arctg;
+        } else if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
+          degreeFromStartPoint = 180 + arctg;
+        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
+          degreeFromStartPoint = 360 - arctg;
+        }
+        const rotateDegree = degreeFromStartPoint - degree;
+        const rotateX = relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180);
+        const rotateY = relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180);
+
+        text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
         text.setAttributeNS(null, "transform", `scale(1 -1)`);
 
-        text.textContent = `(${item.x}, ${item.y})`;
+        text.setAttributeNS(null, "x", `${rotateX}`);
+        text.setAttributeNS(null, "y", `${(rotateY == relativeCenterY + h/2 || rotateY == relativeCenterY + b/2) ? rotateY - 5 : rotateY+10}`);
+        text.textContent = `(${(rotateX-relativeCenterX).toFixed(1)}, ${(rotateY - relativeCenterY).toFixed(1)})`;
 
         svg.current.appendChild(text)
       })
@@ -102,7 +110,7 @@ function AddBeam({ saveShape, className, children }) {
         <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
       </div>
 
-      <button onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
       <Preview degree={degree} />
         

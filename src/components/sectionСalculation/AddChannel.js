@@ -44,6 +44,47 @@ function AddChannel({ saveShape, className, children }) {
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
 
       svg.current.appendChild(path);
+
+      const coords = [
+        {x: -z0*10, y: h/2},
+        {x: b - z0*10, y: h/2},
+        {x: b - z0*10, y: -h/2},
+        {x: -z0*10, y: -h/2} 
+      ]
+
+      coords.forEach((item, id) => {
+        const text = document.createElementNS(xmlns, "text");
+        text.setAttributeNS(null, "font-size", "10px");
+        text.setAttributeNS(null, "text-anchor", "middle");
+      
+        const triangleHypotenuse = Math.sqrt(item.y**2 + item.x**2);
+        const tgx = (item.y < 0 ? -item.y : item.y) / (item.x < 0 ? -item.x : item.x);
+        const arctg = Math.atan(tgx)*180/Math.PI;
+
+        let degreeFromStartPoint
+
+        if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
+          degreeFromStartPoint = 180 - arctg;
+        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
+          degreeFromStartPoint = arctg;
+        } else if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
+          degreeFromStartPoint = 180 + arctg;
+        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
+          degreeFromStartPoint = 360 - arctg;
+        }
+        const rotateDegree = degreeFromStartPoint - degree;
+        const rotateX = Math.round(relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180));
+        const rotateY = Math.round(relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180));
+
+        text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
+        text.setAttributeNS(null, "transform", `scale(1 -1)`);
+
+        text.setAttributeNS(null, "x", `${rotateX}`);
+        text.setAttributeNS(null, "y", `${(rotateY == relativeCenterY + h/2 || rotateY == relativeCenterY + z0*10 || rotateY == relativeCenterY + b - z0*10) ? rotateY - 5 : rotateY+10}`);
+        text.textContent = `(${(rotateX-relativeCenterX).toFixed(1)}, ${(rotateY - relativeCenterY).toFixed(1)})`;
+
+        svg.current.appendChild(text)
+      })
     }
   }
 
@@ -74,7 +115,7 @@ function AddChannel({ saveShape, className, children }) {
         <label>y <input value={centerY} onChange={(e) => convertToNumber(e, setCenterY)} /></label>
       </div>
 
-      <button onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
       <Preview degree={degree} />
 

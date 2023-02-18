@@ -103,18 +103,21 @@ function drawAxis(svg, x1, y1, x2, y2, axisName) {
 function rotate(x, y, line, text, degree, endPoint, orientation) {
   line.setAttributeNS(null, 'transform', `rotate(${degree}, ${x}, ${y})`);
 
-  const rad = (90 - (degree >= 0 ? degree : degree * -1)) * Math.PI / 180;
-  const sinX = rad**5/120 - rad**3/6 + rad;
-  const lineLength = (orientation == "vertical") ? endPoint - y : endPoint - x;
+  const currentX = text.x.animVal[0].value;
+  const currentY = text.y.animVal[0].value;
+  let rotateX;
+  let rotateY;
 
-  let alphaY = sinX * lineLength;
-  let alphaX = Math.sqrt(lineLength**2 - alphaY**2);
-
-  if (orientation == "vertical") {
-    text.setAttributeNS(null, 'x', `${degree > 0 ? x-alphaX : x+alphaX}`);
-    text.setAttributeNS(null, 'y', `${y+alphaY-8}`);
+  if (currentY > y) {
+    const rotateDegree = 90 + degree;
+    rotateX = x + (currentY-y)*Math.cos(rotateDegree*Math.PI/180);
+    rotateY = y + (currentY-y)*Math.sin(rotateDegree*Math.PI/180);
   } else {
-    text.setAttributeNS(null, 'x', `${x+alphaY}`);
-    text.setAttributeNS(null, 'y', `${degree > 0 ? y-alphaX-8 : y+alphaX-8}`);
+    const rotateDegree = (degree > 0) ? degree : 360 + degree;
+    rotateX = x + (currentX-x)*Math.cos(rotateDegree*Math.PI/180);
+    rotateY = y - (currentX-x)*Math.sin(rotateDegree*Math.PI/180) - 10;
   }
+
+  text.setAttributeNS(null, 'x', `${rotateX}`);
+  text.setAttributeNS(null, 'y', `${rotateY}`);
 }

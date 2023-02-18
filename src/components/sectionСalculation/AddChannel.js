@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import styled from "styled-components";
+import createTextCoords from "../../javascript/addCoordText";
 
 function AddChannel({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
@@ -52,7 +53,9 @@ function AddChannel({ saveShape, className, children }) {
         {x: -z0*10, y: -h/2} 
       ]
 
-      coords.forEach((item, id) => {
+      createTextCoords(arguments, coords, degree)
+
+      /* coords.forEach((item, id) => {
         const text = document.createElementNS(xmlns, "text");
         text.setAttributeNS(null, "font-size", "10px");
         text.setAttributeNS(null, "text-anchor", "middle");
@@ -73,18 +76,18 @@ function AddChannel({ saveShape, className, children }) {
           degreeFromStartPoint = 360 - arctg;
         }
         const rotateDegree = degreeFromStartPoint - degree;
-        const rotateX = Math.round(relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180));
-        const rotateY = Math.round(relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180));
+        const rotateX = relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180);
+        const rotateY = relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180);
 
         text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
         text.setAttributeNS(null, "transform", `scale(1 -1)`);
 
         text.setAttributeNS(null, "x", `${rotateX}`);
-        text.setAttributeNS(null, "y", `${(rotateY == relativeCenterY + h/2 || rotateY == relativeCenterY + z0*10 || rotateY == relativeCenterY + b - z0*10) ? rotateY - 5 : rotateY+10}`);
+        text.setAttributeNS(null, "y", `${(rotateY.toFixed(1) == relativeCenterY + h/2 || rotateY.toFixed(1) == relativeCenterY + z0*10 || rotateY.toFixed(1) == relativeCenterY + b - z0*10) ? rotateY - 5 : rotateY+10}`);
         text.textContent = `(${(rotateX-relativeCenterX).toFixed(1)}, ${(rotateY - relativeCenterY).toFixed(1)})`;
 
         svg.current.appendChild(text)
-      })
+      }) */
     }
   }
 

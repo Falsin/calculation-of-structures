@@ -1,19 +1,21 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import createTextCoords from "../../javascript/addCoordText";
 
 function AddRectangle({ saveShape, className, children }) {
-  const [height, setHeight] = useState(100);
-  const [width, setWidth] = useState(50);
+  const [h, setH] = useState(100);
+  const [b, setB] = useState(50);
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
 
-  function drawRectangle(b, h, coordX, coordY) {
+  function drawRectangle() {
     const rectangleInstance = {
-      height: parseFloat(height),
-      width: parseFloat(width),
+      h: parseFloat(h),
+      b: parseFloat(b),
       centerX,
       centerY,
       type: "rectangle",
+      degree: 0
     }
 
     return function (svg, relativeCenterX, relativeCenterY) {
@@ -22,16 +24,25 @@ function AddRectangle({ saveShape, className, children }) {
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
-      const {height, width} = rectangleInstance
+      const {h, b, degree} = rectangleInstance
 
       const path = document.createElementNS(xmlns, "path");
-      path.setAttributeNS(null, "d", `M ${relativeCenterX - width/2}, ${relativeCenterY - height/2} h ${width} v ${height} h ${-width} z`);
+      path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${h} h ${-b} z`);
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1)`);
 
       svg.current.appendChild(path);
+
+      const coords = [
+        {x: -b/2, y: h/2},
+        {x: b/2, y: h/2},
+        {x: -b/2, y: -h/2},
+        {x: b/2, y: -h/2}
+      ]
+
+      createTextCoords(arguments, coords, degree);
     }
   }
 
@@ -40,10 +51,10 @@ function AddRectangle({ saveShape, className, children }) {
       <p>Прямоугольное сечение</p>
 
       <label htmlFor="rectangleHeight">Высота (h):</label>
-      <input id="rectangleHeight" onChange={(e) => setHeight(e.target.value)} value={height} />
+      <input id="rectangleHeight" onChange={(e) => setH(e.target.value)} value={h} />
 
       <label htmlFor="rectangleWidth">Ширина (b):</label>
-      <input id="rectangleWidth" onChange={(e) => setWidth(e.target.value)} value={width} />
+      <input id="rectangleWidth" onChange={(e) => setB(e.target.value)} value={b} />
         
       <div>
         <p>Координаты</p>

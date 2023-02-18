@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import styled from "styled-components";
+import createTextCoords from "../../javascript/addCoordText";
 
 function AddEqualAnglesCorners({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
@@ -46,6 +47,14 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
 
       svg.current.appendChild(path);
+
+      const coords = [
+        {x: -z0*10, y: b - z0*10},
+        {x: -z0*10, y: -z0*10},
+        {x: b - z0*10, y: -z0*10}
+      ]
+
+      createTextCoords(arguments, coords, degree);
     }
   }
 
@@ -84,7 +93,7 @@ function Preview({degree}) {
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   
-  const equalAngleCorner = useSelector(state => state.equalAnglesCorners.equalAnglesCorners[16]);
+  const equalAngleCorner = useSelector(state => state.equalAnglesCorners.equalAnglesCorners[10]);
   const {b, t} = !equalAngleCorner ? {} : equalAngleCorner;
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import styled from "styled-components";
+import createTextCoords from "../../javascript/addCoordText";
 
 function AddUnequalAnglesCorners({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
@@ -49,6 +50,24 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
       path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -degree : degree})`);
 
       svg.current.appendChild(path);
+
+      let coords;
+
+      if (activeCase == 1) {
+        coords = [
+          {x: -x0*10, y: B - y0*10},
+          {x: -x0*10, y: -y0*10},
+          {x: b - x0*10, y: -y0*10},
+        ]
+      } else {
+        coords = [
+          {x: x0*10, y: B - y0*10},
+          {x: x0*10, y: -y0*10},
+          {x: -b + x0*10, y: -y0*10},
+        ]
+      }
+
+      createTextCoords(arguments, coords, degree);
     }
   }
 

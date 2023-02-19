@@ -7,10 +7,10 @@ import { StyledAddUnequalAnglesCorners } from "./AddUnequalAnglesCorners";
 import { StyledAddRectangle } from "./AddRectangle";
 import { MathJax } from "better-react-mathjax";
 import drawShapesArray from "../../javascript/drawShapesArray";
+import uniqid from 'uniqid';
 
 function sectionСalculation({ className, children }) {
   const [result, setResult] = useState(null);
-  const {isActive, setStatus} = useState(false);
 
   return (
     <div>
@@ -48,8 +48,15 @@ function InputingData({className, children, setResult, result}) {
     })
 
     const response = await request.json();
-    console.log(response)
     setResult(response);
+  }
+
+  function changeStatus(e) {
+    if (e.currentTarget.className == "active") {
+      e.currentTarget.classList.remove("active")
+    } else {
+      e.currentTarget.classList.add("active")
+    }
   }
 
   return (
@@ -57,14 +64,8 @@ function InputingData({className, children, setResult, result}) {
       <SVG ref={svg} transform="scale(1, -1)" />
       <form onSubmit={submit}>
         <ul>
-          <li onClick={(e) => {
-              if (e.currentTarget.className == "active") {
-                e.currentTarget.classList.remove("active")
-              } else {
-                e.currentTarget.classList.add("active")
-              }
-          }}>
-            <h3>Простые сечения</h3>
+          <li>
+            <h2 onClick={(e) => changeStatus(e)}>Простые сечения</h2>
             
             <ul>
               {<StyledAddBeam saveShape={saveShape} />}
@@ -74,11 +75,34 @@ function InputingData({className, children, setResult, result}) {
               {<StyledAddRectangle saveShape={saveShape} />}
             </ul>
           </li>
+
           <li>
-            Состав сечения
+            <h2 onClick={(e) => changeStatus(e)}>Состав сечения ({arrayShapes.length})</h2>
+
+            {!arrayShapes.length 
+              ? <p>Вы ещё не добавили ни одного сечения</p>
+              : <ul>
+                  {arrayShapes.map(elem => {
+                    const shape = elem();
+                    const keys = ["centerX", "centerY", "degree"];
+
+                    return <li>
+                      <ul>
+                        {keys.map(key => <li>{key}: {shape[key]}</li>)}
+                        <button onClick={() => {
+                          const filteredArray = arrayShapes.filter(func => func().uniqid != shape.uniqid);
+                          setArrayShapes(filteredArray)
+                          /* const index = arrayShapes.findIndex((func) => func().uniqid == shape.uniqid);
+                          const copyArray = arrayShapes.slice();
+                          copyArray.splice(index, 1)
+                          setArrayShapes(copyArray) */
+                        }} type="button">Удалить</button>
+                      </ul>
+                    </li>
+                  })}
+                </ul>
+            }
           </li>
-        </ul>
-        <ul>
         </ul>
 
         <button>рассчитать</button>
@@ -90,17 +114,21 @@ function InputingData({className, children, setResult, result}) {
 const StyledInputingData = styled(InputingData)`
   display: flex;
 
-  & ul > li > ul {
+  h2 {
+    margin: 0;
+  }
+
+  li > h2 ~ ul {
     overflow: hidden;
     max-height: 0;
     padding: 0;
     transition: 0.6s;
   }
 
-  & ul > li.active > ul {
-      max-height: 1000px;
-      margin-top: 10px;
-    }
+  li > h2.active ~ ul {
+    max-height: 1000px;
+    margin-top: 10px;
+  }
 `
 
 function OutputingData({result, className, children}) {

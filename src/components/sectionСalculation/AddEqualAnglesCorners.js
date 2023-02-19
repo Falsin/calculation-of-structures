@@ -66,8 +66,8 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className} onClick={() => setStatus(!isActive)}>
-      <p>Равнополочный уголок</p>
+    <li className={className}>
+      <h3 onClick={() => setStatus(!isActive)}>Равнополочный уголок</h3>
 
       <div className={isActive ? "active" : ""}>
         <select onChange={(e) => {
@@ -124,7 +124,7 @@ function Preview({degree}) {
 }
 
 export const StyledAddEqualAnglesCorners = styled(AddEqualAnglesCorners)`
-  p {
+  h3 {
     margin: 0;
   }
 

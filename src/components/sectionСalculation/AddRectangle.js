@@ -50,8 +50,8 @@ function AddRectangle({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className} onClick={() => setStatus(!isActive)}>
-      <p>Прямоугольное сечение</p>
+    <li className={className}>
+      <h3 onClick={() => setStatus(!isActive)}>Прямоугольное сечение</h3>
 
       <div className={isActive ? "active" : ""}>
         <label htmlFor="rectangleHeight">Высота (h):</label>
@@ -73,7 +73,7 @@ function AddRectangle({ saveShape, className, children }) {
 }
 
 export const StyledAddRectangle = styled(AddRectangle)`
-  p {
+  h3 {
     margin: 0;
   }
 

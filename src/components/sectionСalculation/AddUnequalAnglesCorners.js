@@ -79,8 +79,8 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className} onClick={() => setStatus(!isActive)}>
-      <p>Неравнополочный уголок</p>
+    <li className={className}>
+      <h3 onClick={() => setStatus(!isActive)}>Неравнополочный уголок</h3>
 
       <div className={isActive ? "active" : ""}>
         <select onChange={(e) => {
@@ -141,7 +141,7 @@ function Preview({ degree, activeCase }) {
 }
 
 export const StyledAddUnequalAnglesCorners = styled(AddUnequalAnglesCorners)`
-  & > p {
+  h3 {
     margin: 0;
   }
 

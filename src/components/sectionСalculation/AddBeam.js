@@ -65,8 +65,8 @@ function AddBeam({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className} onClick={() => setStatus(!isActive)}>
-      <p>Двутавр</p>
+    <li className={className}>
+      <h3 onClick={() => setStatus(!isActive)}>Двутавр</h3>
 
       <div className={isActive ? "active" : ""}>
         <select onChange={(e) => {
@@ -123,7 +123,7 @@ function Preview({degree}) {
 }
 
 export const StyledAddBeam = styled(AddBeam)`
-  p {
+  h3 {
     margin: 0;
   }
 

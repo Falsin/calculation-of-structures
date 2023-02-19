@@ -60,18 +60,13 @@ function AddChannel({ saveShape, className, children }) {
     }
   }
 
-  function convertToNumber(e, setState) {
-    const value = e.target.value;
-    setState((value[value.length - 1] === ".") ? value : parseFloat(value))
-  }
-
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);
   }
 
   return (
-    <li className={className} onClick={() => setStatus(!isActive)}>
-      <p>Швеллер</p>
+    <li className={className}>
+      <h3 onClick={() => setStatus(!isActive)}>Швеллер</h3>
 
       <div className={isActive ? "active" : ""}>
         <select onChange={(e) => {
@@ -84,8 +79,8 @@ function AddChannel({ saveShape, className, children }) {
           
         <div>
           <p>Координаты</p>
-          <label>x <input value={centerX} onChange={(e) => convertToNumber(e, setCenterX)} /></label>
-          <label>y <input value={centerY} onChange={(e) => convertToNumber(e, setCenterY)} /></label>
+          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
+          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
         </div>
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
@@ -128,7 +123,7 @@ function Preview({degree}) {
 }
 
 export const StyledAddChannel = styled(AddChannel)`
-  p {
+  h3 {
     margin: 0;
   }
 

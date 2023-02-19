@@ -9,7 +9,8 @@ import { MathJax } from "better-react-mathjax";
 import drawShapesArray from "../../javascript/drawShapesArray";
 
 function sectionСalculation({ className, children }) {
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(null);
+  const {isActive, setStatus} = useState(false);
 
   return (
     <div>
@@ -56,11 +57,28 @@ function InputingData({className, children, setResult, result}) {
       <SVG ref={svg} transform="scale(1, -1)" />
       <form onSubmit={submit}>
         <ul>
-          {<StyledAddBeam saveShape={saveShape} />}
-          {<StyledAddChannel saveShape={saveShape} />}
-          {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
-          {<StyledAddUnequalAnglesCorners saveShape={saveShape} />}
-          {<StyledAddRectangle saveShape={saveShape} />}
+          <li onClick={(e) => {
+              if (e.currentTarget.className == "active") {
+                e.currentTarget.classList.remove("active")
+              } else {
+                e.currentTarget.classList.add("active")
+              }
+          }}>
+            <h3>Простые сечения</h3>
+            
+            <ul>
+              {<StyledAddBeam saveShape={saveShape} />}
+              {<StyledAddChannel saveShape={saveShape} />}
+              {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
+              {<StyledAddUnequalAnglesCorners saveShape={saveShape} />}
+              {<StyledAddRectangle saveShape={saveShape} />}
+            </ul>
+          </li>
+          <li>
+            Состав сечения
+          </li>
+        </ul>
+        <ul>
         </ul>
 
         <button>рассчитать</button>
@@ -71,10 +89,21 @@ function InputingData({className, children, setResult, result}) {
 
 const StyledInputingData = styled(InputingData)`
   display: flex;
+
+  & ul > li > ul {
+    overflow: hidden;
+    max-height: 0;
+    padding: 0;
+    transition: 0.6s;
+  }
+
+  & ul > li.active > ul {
+      max-height: 1000px;
+      margin-top: 10px;
+    }
 `
 
 function OutputingData({result, className, children}) {
-  console.log(result)
   return (
     <div className={className}>
       <MathJax>

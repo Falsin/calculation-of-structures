@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
+import uniqid from 'uniqid';
 
 function AddUnequalAnglesCorners({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [corner, setCorner] = useState(null);
   const [degree, setDegree] = useState(0);
+  const [isActive, setStatus] = useState(false);
   
   const [activeCase, setActiveCase] = useState(1)
 
@@ -31,6 +33,7 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
       degree, 
       type: "unequalAnglesCorner",
       activeCase,
+      uniqid: uniqid()
     }
     
     return function (svg, relativeCenterX, relativeCenterY) {
@@ -76,30 +79,33 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
+    <li className={className} onClick={() => setStatus(!isActive)}>
       <p>Неравнополочный уголок</p>
-      <select onChange={(e) => {
-        const corner = corners.find(elem => elem._id === e.target.value);
-        setCorner(corner);
-      }}>
-        <option>Выберите № неравнополочного уголка</option>
-        {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
-      </select>
-        
-      <div>
-        <p>Координаты</p>
-        <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-        <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
+
+      <div className={isActive ? "active" : ""}>
+        <select onChange={(e) => {
+          const corner = corners.find(elem => elem._id === e.target.value);
+          setCorner(corner);
+        }}>
+          <option>Выберите № неравнополочного уголка</option>
+          {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
+        </select>
+          
+        <div>
+          <p>Координаты</p>
+          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
+          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
+        </div>
+
+        <button type="button" className={`case ${activeCase == 1 ? "active" : ""}`} onClick={() => setActiveCase(1)}>1 случай</button>
+        <button type="button" className={`case ${activeCase == 2 ? "active" : ""}`} onClick={() => setActiveCase(2)} >2 случай</button>
+
+        <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+
+        <Preview degree={degree} activeCase={activeCase} />
+
+        <input type="button" value="Добавить" onClick={() => saveShape(drawCorner())} />
       </div>
-
-      <button type="button" className={`case ${activeCase == 1 ? "active" : ""}`} onClick={() => setActiveCase(1)}>1 случай</button>
-      <button type="button" className={`case ${activeCase == 2 ? "active" : ""}`} onClick={() => setActiveCase(2)} >2 случай</button>
-
-      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
-
-      <Preview degree={degree} activeCase={activeCase} />
-
-      <input type="button" value="Добавить" onClick={() => saveShape(drawCorner())} />
     </li>
   )
 }
@@ -135,11 +141,23 @@ function Preview({ degree, activeCase }) {
 }
 
 export const StyledAddUnequalAnglesCorners = styled(AddUnequalAnglesCorners)`
-  div input {
+  & > p {
+    margin: 0;
+  }
+
+  div div input {
     width: 40px;
   }
 
-  .case.active {
-    background: yellow;
+  & > div {
+    overflow: hidden;
+    max-height: 0;
+    padding: 0;
+    transition: 0.6s;
+
+    &.active {
+      max-height: 1000px;
+      margin-top: 10px;
+    }
   }
 `

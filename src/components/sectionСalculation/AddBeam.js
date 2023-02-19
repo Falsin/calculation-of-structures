@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
+import uniqid from 'uniqid';
 
 function AddBeam({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [beam, setBeam] = useState(null);
   const [degree, setDegree] = useState(0);
+  const [isActive, setStatus] = useState(false);
 
   const beams = useSelector(selectAllBeams);
   const status = useSelector(state => state.beams.status);
@@ -26,7 +28,8 @@ function AddBeam({ saveShape, className, children }) {
       centerX: parseFloat(centerX), 
       centerY: parseFloat(centerY),
       degree,
-      type: "beam" 
+      type: "beam",
+      uniqid: uniqid()
     }
 
     return function (svg, relativeCenterX, relativeCenterY) {
@@ -62,28 +65,30 @@ function AddBeam({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
+    <li className={className} onClick={() => setStatus(!isActive)}>
       <p>Двутавр</p>
 
-      <select onChange={(e) => {
-        const beam = beams.find(beam => beam._id === e.target.value);
-        setBeam(beam);
-      }}>
-        <option>Выберите № двутавра</option>
-        {beams.map(beam => <option value={beam._id} key={beam._id}>{beam.no}</option>)}
-      </select>
+      <div className={isActive ? "active" : ""}>
+        <select onChange={(e) => {
+          const beam = beams.find(beam => beam._id === e.target.value);
+          setBeam(beam);
+        }}>
+          <option>Выберите № двутавра</option>
+          {beams.map(beam => <option value={beam._id} key={beam._id}>{beam.no}</option>)}
+        </select>
 
-      <div>
-        <p>Координаты центра тяжести</p>
-        <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-        <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
+        <div>
+          <p>Координаты центра тяжести</p>
+          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
+          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
+        </div>
+
+        <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+
+        <Preview degree={degree} />
+          
+        <input type="button" value="Добавить" onClick={() => saveShape(drawBeam())} />
       </div>
-
-      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
-
-      <Preview degree={degree} />
-        
-      <input type="button" value="Добавить" onClick={() => saveShape(drawBeam())} />
     </li>
   )
 }
@@ -118,7 +123,23 @@ function Preview({degree}) {
 }
 
 export const StyledAddBeam = styled(AddBeam)`
-  div input {
+  p {
+    margin: 0;
+  }
+
+  div div input {
     width: 40px;
+  }
+
+  & > div {
+    overflow: hidden;
+    max-height: 0;
+    padding: 0;
+    transition: 0.6s;
+
+    &.active {
+      max-height: 1000px;
+      margin-top: 10px;
+    }
   }
 `

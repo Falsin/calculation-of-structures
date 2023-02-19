@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
+import uniqid from 'uniqid';
 
 function AddChannel({ saveShape, className, children }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [channel, setChannel] = useState(null);
   const [degree, setDegree] = useState(0);
+  const [isActive, setStatus] = useState(false);
 
   const channels = useSelector(selectAllChannels);
   const status = useSelector(state => state.channels.status);
@@ -26,7 +28,8 @@ function AddChannel({ saveShape, className, children }) {
       centerX: parseFloat(centerX), 
       centerY: parseFloat(centerY),
       degree,
-      type: "channel" 
+      type: "channel",
+      uniqid: uniqid() 
     }
 
     return function (svg, relativeCenterX, relativeCenterY) {
@@ -53,41 +56,7 @@ function AddChannel({ saveShape, className, children }) {
         {x: -z0*10, y: -h/2} 
       ]
 
-      createTextCoords(arguments, coords, degree)
-
-      /* coords.forEach((item, id) => {
-        const text = document.createElementNS(xmlns, "text");
-        text.setAttributeNS(null, "font-size", "10px");
-        text.setAttributeNS(null, "text-anchor", "middle");
-      
-        const triangleHypotenuse = Math.sqrt(item.y**2 + item.x**2);
-        const tgx = (item.y < 0 ? -item.y : item.y) / (item.x < 0 ? -item.x : item.x);
-        const arctg = Math.atan(tgx)*180/Math.PI;
-
-        let degreeFromStartPoint
-
-        if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
-          degreeFromStartPoint = 180 - arctg;
-        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y > relativeCenterY) {
-          degreeFromStartPoint = arctg;
-        } else if (relativeCenterX + item.x < relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
-          degreeFromStartPoint = 180 + arctg;
-        } else if (relativeCenterX + item.x > relativeCenterX && relativeCenterY + item.y < relativeCenterY) {
-          degreeFromStartPoint = 360 - arctg;
-        }
-        const rotateDegree = degreeFromStartPoint - degree;
-        const rotateX = relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180);
-        const rotateY = relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180);
-
-        text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
-        text.setAttributeNS(null, "transform", `scale(1 -1)`);
-
-        text.setAttributeNS(null, "x", `${rotateX}`);
-        text.setAttributeNS(null, "y", `${(rotateY.toFixed(1) == relativeCenterY + h/2 || rotateY.toFixed(1) == relativeCenterY + z0*10 || rotateY.toFixed(1) == relativeCenterY + b - z0*10) ? rotateY - 5 : rotateY+10}`);
-        text.textContent = `(${(rotateX-relativeCenterX).toFixed(1)}, ${(rotateY - relativeCenterY).toFixed(1)})`;
-
-        svg.current.appendChild(text)
-      }) */
+      createTextCoords(arguments, coords, degree);
     }
   }
 
@@ -101,28 +70,30 @@ function AddChannel({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
+    <li className={className} onClick={() => setStatus(!isActive)}>
       <p>Швеллер</p>
 
-      <select onChange={(e) => {
-        const channel = channels.find(channel => channel._id === e.target.value);
-        setChannel(channel);
-      }}>
-        <option>Выберите № швеллера</option>
-        {channels.map(channel => <option value={channel._id} key={channel._id}>{channel.no}</option>)}
-      </select>
-        
-      <div>
-        <p>Координаты</p>
-        <label>x <input value={centerX} onChange={(e) => convertToNumber(e, setCenterX)} /></label>
-        <label>y <input value={centerY} onChange={(e) => convertToNumber(e, setCenterY)} /></label>
+      <div className={isActive ? "active" : ""}>
+        <select onChange={(e) => {
+          const channel = channels.find(channel => channel._id === e.target.value);
+          setChannel(channel);
+        }}>
+          <option>Выберите № швеллера</option>
+          {channels.map(channel => <option value={channel._id} key={channel._id}>{channel.no}</option>)}
+        </select>
+          
+        <div>
+          <p>Координаты</p>
+          <label>x <input value={centerX} onChange={(e) => convertToNumber(e, setCenterX)} /></label>
+          <label>y <input value={centerY} onChange={(e) => convertToNumber(e, setCenterY)} /></label>
+        </div>
+
+        <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
+
+        <Preview degree={degree} />
+
+        <input type="button" value="Добавить" onClick={() => saveShape(drawChannel())} />
       </div>
-
-      <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
-
-      <Preview degree={degree} />
-
-      <input type="button" value="Добавить" onClick={() => saveShape(drawChannel())} />
     </li>
   )
 }
@@ -157,7 +128,23 @@ function Preview({degree}) {
 }
 
 export const StyledAddChannel = styled(AddChannel)`
-  div input {
+  p {
+    margin: 0;
+  }
+
+  div div input {
     width: 40px;
+  }
+
+  & > div {
+    overflow: hidden;
+    max-height: 0;
+    padding: 0;
+    transition: 0.6s;
+
+    &.active {
+      max-height: 1000px;
+      margin-top: 10px;
+    }
   }
 `

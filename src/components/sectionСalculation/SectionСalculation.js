@@ -59,6 +59,12 @@ function InputingData({className, children, setResult, result}) {
     }
   }
 
+  function changeActiveSection(shape) {
+    const path = document.getElementById(shape.uniqid);
+    path.classList.toggle("active");
+  }
+
+
   return (
     <div className={className}>
       <SVG ref={svg} transform="scale(1, -1)" />
@@ -85,19 +91,27 @@ function InputingData({className, children, setResult, result}) {
                   {arrayShapes.map(elem => {
                     const shape = elem();
                     const keys = ["centerX", "centerY", "degree"];
+                    const sectionNames = {
+                      beam: "Двутавр",
+                      channel: "Швеллер",
+                      equalAnglesCorner: "Равнополочный уголок",
+                      unequalAnglesCorner: "Неравнополочный уголок",
+                      rectangle: "Прямоугольное сечение"
+                    }
 
-                    return <li>
+                    return <li style={{border: "solid 1px black"}} 
+                      onMouseEnter={() => changeActiveSection(shape)}
+                      onMouseLeave={() => changeActiveSection(shape)}
+                    >
+                      <h3 onClick={(e) => changeStatus(e)}>{sectionNames[shape.type]}</h3>
                       <ul>
                         {keys.map(key => <li>{key}: {shape[key]}</li>)}
-                        <button onClick={() => {
+                      </ul>
+
+                      <button onClick={() => {
                           const filteredArray = arrayShapes.filter(func => func().uniqid != shape.uniqid);
                           setArrayShapes(filteredArray)
-                          /* const index = arrayShapes.findIndex((func) => func().uniqid == shape.uniqid);
-                          const copyArray = arrayShapes.slice();
-                          copyArray.splice(index, 1)
-                          setArrayShapes(copyArray) */
                         }} type="button">Удалить</button>
-                      </ul>
                     </li>
                   })}
                 </ul>
@@ -118,14 +132,17 @@ const StyledInputingData = styled(InputingData)`
     margin: 0;
   }
 
-  li > h2 ~ ul {
+  li > h2 ~ ul,
+  li > h3 ~ ul {
     overflow: hidden;
     max-height: 0;
     padding: 0;
-    transition: 0.6s;
+    transition-timing-function: linear;
+    transition: 1s;
   }
 
-  li > h2.active ~ ul {
+  li > h2.active ~ ul,
+  li > h3.active ~ ul {
     max-height: 1000px;
     margin-top: 10px;
   }
@@ -193,6 +210,10 @@ const SVG = styled.svg`
   width: 800px;
   height: 600px;
   border: 1px solid black;
+
+  path.active {
+    stroke: red;
+  }
 `
 
 const StyledOutputingData = styled(OutputingData)`

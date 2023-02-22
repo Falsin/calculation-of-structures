@@ -1,13 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { StyledAddBeam } from "./AddBeam";
-import { StyledAddChannel } from "./AddChannel";
-import { StyledAddEqualAnglesCorners } from "./AddEqualAnglesCorners";
-import { StyledAddUnequalAnglesCorners } from "./AddUnequalAnglesCorners";
-import { StyledAddRectangle } from "./AddRectangle";
 import { MathJax } from "better-react-mathjax";
-import drawShapesArray from "../../javascript/drawShapesArray";
-import uniqid from 'uniqid';
+import StyledInputingData from "./InputingData";
 
 function sectionСalculation({ className, children }) {
   const [result, setResult] = useState(null);
@@ -19,134 +13,6 @@ function sectionСalculation({ className, children }) {
     </div>
   )
 }
-
-function InputingData({className, children, setResult, result}) {
-  const svg = useRef(null);
-  const [arrayShapes, setArrayShapes] = useState([]);
-
-  const saveShape = (func) => setArrayShapes([...arrayShapes, func]);
-
-  useEffect(() => {
-    draw()
-  }, [arrayShapes, result])
-
-  function draw() {
-    svg.current.replaceChildren();
-
-    drawShapesArray(svg, arrayShapes, result)
-  }
-  
-  async function submit(e) {
-    e.preventDefault();
-
-    const request = await fetch("http://localhost:3000/flatSection/", {
-      method: "PUT",
-      body: JSON.stringify(arrayShapes.map(item => item())),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    })
-
-    const response = await request.json();
-    setResult(response);
-  }
-
-  function changeStatus(e) {
-    if (e.currentTarget.className == "active") {
-      e.currentTarget.classList.remove("active")
-    } else {
-      e.currentTarget.classList.add("active")
-    }
-  }
-
-  function changeActiveSection(shape) {
-    const path = document.getElementById(shape.uniqid);
-    path.classList.toggle("active");
-  }
-
-
-  return (
-    <div className={className}>
-      <SVG ref={svg} transform="scale(1, -1)" />
-      <form onSubmit={submit}>
-        <ul>
-          <li>
-            <h2 onClick={(e) => changeStatus(e)}>Простые сечения</h2>
-            
-            <ul>
-              {<StyledAddBeam saveShape={saveShape} />}
-              {<StyledAddChannel saveShape={saveShape} />}
-              {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
-              {<StyledAddUnequalAnglesCorners saveShape={saveShape} />}
-              {<StyledAddRectangle saveShape={saveShape} />}
-            </ul>
-          </li>
-
-          <li>
-            <h2 onClick={(e) => changeStatus(e)}>Состав сечения ({arrayShapes.length})</h2>
-
-            {!arrayShapes.length 
-              ? <p>Вы ещё не добавили ни одного сечения</p>
-              : <ul>
-                  {arrayShapes.map(elem => {
-                    const shape = elem();
-                    const keys = ["centerX", "centerY", "degree"];
-                    const sectionNames = {
-                      beam: "Двутавр",
-                      channel: "Швеллер",
-                      equalAnglesCorner: "Равнополочный уголок",
-                      unequalAnglesCorner: "Неравнополочный уголок",
-                      rectangle: "Прямоугольное сечение"
-                    }
-
-                    return <li style={{border: "solid 1px black"}} 
-                      onMouseEnter={() => changeActiveSection(shape)}
-                      onMouseLeave={() => changeActiveSection(shape)}
-                    >
-                      <h3 onClick={(e) => changeStatus(e)}>{sectionNames[shape.type]}</h3>
-                      <ul>
-                        {keys.map(key => <li>{key}: {shape[key]}</li>)}
-                      </ul>
-
-                      <button onClick={() => {
-                          const filteredArray = arrayShapes.filter(func => func().uniqid != shape.uniqid);
-                          setArrayShapes(filteredArray)
-                        }} type="button">Удалить</button>
-                    </li>
-                  })}
-                </ul>
-            }
-          </li>
-        </ul>
-
-        <button>рассчитать</button>
-      </form>
-    </div>
-  )
-}
-
-const StyledInputingData = styled(InputingData)`
-  display: flex;
-
-  h2 {
-    margin: 0;
-  }
-
-  li > h2 ~ ul,
-  li > h3 ~ ul {
-    overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    transition-timing-function: linear;
-    transition: 1s;
-  }
-
-  li > h2.active ~ ul,
-  li > h3.active ~ ul {
-    max-height: 1000px;
-    margin-top: 10px;
-  }
-`
 
 function OutputingData({result, className, children}) {
   return (
@@ -205,17 +71,6 @@ export const StyledSectionСalculation = styled(sectionСalculation)`
     display: flex;
   }
 `
-
-const SVG = styled.svg`
-  width: 800px;
-  height: 600px;
-  border: 1px solid black;
-
-  path.active {
-    stroke: red;
-  }
-`
-
 const StyledOutputingData = styled(OutputingData)`
   & mjx-frac {
     font-size: 140%;

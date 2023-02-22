@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
+import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 
 function AddUnequalAnglesCorners({ saveShape, className, children }) {
@@ -51,6 +52,7 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -degree : degree})`);
+      path.setAttributeNS(null, "id", `${unequalAnglesCornerInstance.uniqid}`);
 
       svg.current.appendChild(path);
 
@@ -80,9 +82,9 @@ function AddUnequalAnglesCorners({ saveShape, className, children }) {
 
   return (
     <li className={className}>
-      <h3 onClick={() => setStatus(!isActive)}>Неравнополочный уголок</h3>
+      <h3 onClick={(e) => changeStatus(e)} className={isActive ? "active" : ""}>Неравнополочный уголок</h3>
 
-      <div className={isActive ? "active" : ""}>
+      <div>
         <select onChange={(e) => {
           const corner = corners.find(elem => elem._id === e.target.value);
           setCorner(corner);
@@ -143,21 +145,21 @@ function Preview({ degree, activeCase }) {
 export const StyledAddUnequalAnglesCorners = styled(AddUnequalAnglesCorners)`
   h3 {
     margin: 0;
+
+    & ~ div {
+      overflow: hidden;
+      max-height: 0;
+      padding: 0;
+      transition: 1s;
+    }
+
+    &.active ~ div {
+        max-height: 1000px;
+        margin-top: 10px;
+      }
   }
 
   div div input {
     width: 40px;
-  }
-
-  & > div {
-    overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    transition: 0.6s;
-
-    &.active {
-      max-height: 1000px;
-      margin-top: 10px;
-    }
   }
 `

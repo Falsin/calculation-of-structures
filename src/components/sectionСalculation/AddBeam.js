@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
+import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 
 function AddBeam({ saveShape, className, children }) {
@@ -46,6 +47,7 @@ function AddBeam({ saveShape, className, children }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
+      path.setAttributeNS(null, "id", `${beamInstance.uniqid}`);
 
       svg.current.appendChild(path);
 
@@ -66,9 +68,9 @@ function AddBeam({ saveShape, className, children }) {
 
   return (
     <li className={className}>
-      <h3 onClick={() => setStatus(!isActive)}>Двутавр</h3>
+      <h3 onClick={(e) => changeStatus(e)}>Двутавр</h3>
 
-      <div className={isActive ? "active" : ""}>
+      <div>
         <select onChange={(e) => {
           const beam = beams.find(beam => beam._id === e.target.value);
           setBeam(beam);
@@ -125,21 +127,21 @@ function Preview({degree}) {
 export const StyledAddBeam = styled(AddBeam)`
   h3 {
     margin: 0;
+
+    & ~ div {
+      overflow: hidden;
+      max-height: 0;
+      padding: 0;
+      transition: 1s;
+    }
+
+    &.active ~ div {
+        max-height: 1000px;
+        margin-top: 10px;
+      }
   }
 
   div div input {
     width: 40px;
-  }
-
-  & > div {
-    overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    transition: 0.6s;
-
-    &.active {
-      max-height: 1000px;
-      margin-top: 10px;
-    }
   }
 `

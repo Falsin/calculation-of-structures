@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
+import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 
 function AddRectangle({ saveShape, className, children }) {
@@ -35,6 +36,7 @@ function AddRectangle({ saveShape, className, children }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1)`);
+      path.setAttributeNS(null, "id", `${rectangleInstance.uniqid}`);
 
       svg.current.appendChild(path);
 
@@ -51,9 +53,9 @@ function AddRectangle({ saveShape, className, children }) {
 
   return (
     <li className={className}>
-      <h3 onClick={() => setStatus(!isActive)}>Прямоугольное сечение</h3>
+      <h3 onClick={(e) => changeStatus(e)} className={isActive ? "active" : ""}>Прямоугольное сечение</h3>
 
-      <div className={isActive ? "active" : ""}>
+      <div>
         <label htmlFor="rectangleHeight">Высота (h):</label>
         <input id="rectangleHeight" onChange={(e) => setH(e.target.value)} value={h} />
 
@@ -75,21 +77,21 @@ function AddRectangle({ saveShape, className, children }) {
 export const StyledAddRectangle = styled(AddRectangle)`
   h3 {
     margin: 0;
+
+    & ~ div {
+      overflow: hidden;
+      max-height: 0;
+      padding: 0;
+      transition: 1s;
+    }
+
+    &.active ~ div {
+        max-height: 1000px;
+        margin-top: 10px;
+      }
   }
 
   div div input {
     width: 40px;
-  }
-
-  & > div {
-    overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    transition: 0.6s;
-
-    &.active {
-      max-height: 1000px;
-      margin-top: 10px;
-    }
   }
 `

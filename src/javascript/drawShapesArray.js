@@ -15,16 +15,20 @@ export default function drawShapesArray(svg, arrayShapes, result) {
     const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
 
     shape(svg, relativeCenterX, relativeCenterY);
-    drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.2, relativeCenterX, parseFloat(style.height)*0.8, `Y${id+1}`);
-    drawAxis(svg, parseFloat(style.width)*0.2, relativeCenterY, parseFloat(style.width)*0.8, relativeCenterY, `X${id+1}`);
 
-    if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
-      drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.85, "Yсл");
-    }
+    const arr = createAxisArray(style, relativeCenterX, relativeCenterY, id).commonAxes;
 
-    if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
-      drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.85, relativeCenterY, "Xсл");
-    }
+    arr.forEach(axis => {
+      if (axis.axisName == "Yсл" || axis.axisName == "Xсл") {
+        if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
+          drawAxis(svg, axis);
+        } else if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
+          drawAxis(svg, axis);
+        }
+      } else {
+        drawAxis(svg, axis);
+      }
+    })
   })
 
   if (result) {
@@ -32,52 +36,7 @@ export default function drawShapesArray(svg, arrayShapes, result) {
   }
 }
 
-function auxiliaryCalc(arrayShapes, style) {
-  const centerXWindow = parseFloat(style.width) / 2;
-  const centerYWindow = parseFloat(style.height) / 2;
-
-  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => {
-    return shapeFunc().centerX;
-  })
-
-  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => {
-    return shapeFunc().centerY;
-  })
-
-  const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
-  const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
-  const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
-  const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
-
-  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
-}
-
-function drawMainAxis(leftXLimit, bottomYLimit, result, svg) {
-  const style = getComputedStyle(svg.current);
-  const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
-  const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
-
-  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `Yc`);
-  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `Xc`);
-      
-  let obj;
-
-  if (result.degree.value <= 45 && result.degree.value >= -45) {
-    obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V'}`);
-    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-    obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U'}`);
-    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-  } else {
-    obj =  drawAxis(svg, relativeCenterX, parseFloat(style.height)*0.1, relativeCenterX, parseFloat(style.height)*0.9, `${result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U'}`);
-    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.height)*0.9, "vertical")
-      
-    obj =  drawAxis(svg, parseFloat(style.width)*0.1, relativeCenterY, parseFloat(style.width)*0.9, relativeCenterY, `${result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V'}`);
-    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, parseFloat(style.width)*0.9, "horizontal")
-  }
-}
-
-function drawAxis(svg, x1, y1, x2, y2, axisName) {
+function drawAxis(svg, {x1, y1, x2, y2, axisName}) {
   const xmlns = "http://www.w3.org/2000/svg";
 
   const defs = document.createElementNS(xmlns, "defs");
@@ -118,6 +77,107 @@ function drawAxis(svg, x1, y1, x2, y2, axisName) {
   return { line, text }
 }
 
+function createAxisArray(style, relativeCenterX, relativeCenterY, id) {
+  return {
+    commonAxes: [
+      {
+        x1: relativeCenterX,
+        x2: relativeCenterX,
+        y1: parseFloat(style.height)*0.2,
+        y2: parseFloat(style.height)*0.8,
+        axisName: `Y${id+1}`
+      },
+      {
+        x1: parseFloat(style.width)*0.2,
+        x2: parseFloat(style.width)*0.8,
+        y1: relativeCenterY,
+        y2: relativeCenterY,
+        axisName: `X${id+1}`
+      },
+      {
+        x1: relativeCenterX,
+        x2: relativeCenterX,
+        y1: parseFloat(style.height)*0.15,
+        y2: parseFloat(style.height)*0.85,
+        axisName: `Yсл`
+      },
+      {
+        x1: parseFloat(style.width)*0.15,
+        x2: parseFloat(style.width)*0.85,
+        y1: relativeCenterY,
+        y2: relativeCenterY,
+        axisName: `Xсл`
+      },
+    ],
+    mainAxes: [
+      {
+        x1: relativeCenterX,
+        x2: relativeCenterX,
+        y1: parseFloat(style.height)*0.1,
+        y2: parseFloat(style.height)*0.9,
+        axisName: `Yc`,
+        orientation: "vertical",
+      },
+      {
+        x1: parseFloat(style.width)*0.1,
+        x2: parseFloat(style.width)*0.9,
+        y1: relativeCenterY,
+        y2: relativeCenterY,
+        axisName: `Xc`,
+        orientation: "horisontal",
+      },
+    ]
+  }
+}
+
+function auxiliaryCalc(arrayShapes, style) {
+  const centerXWindow = parseFloat(style.width) / 2;
+  const centerYWindow = parseFloat(style.height) / 2;
+
+  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => {
+    return shapeFunc().centerX;
+  })
+
+  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => {
+    return shapeFunc().centerY;
+  })
+
+  const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
+  const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
+  const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
+  const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
+
+  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
+}
+
+function drawMainAxis(leftXLimit, bottomYLimit, result, svg) {
+  const style = getComputedStyle(svg.current);
+  const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
+  const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
+
+  const arr = createAxisArray(style, relativeCenterX, relativeCenterY).mainAxes;
+  arr.forEach(axis => drawAxis(svg, axis));
+  arr.forEach(axis => {
+    let obj;
+
+    if (result.degree.value <= 45 && result.degree.value >= -45) {
+      if (axis.orientation == "vertical") {
+        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V';
+      } else {
+        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U';
+      }
+    } else {
+      if (axis.orientation == "vertical") {
+        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U';
+      } else {
+        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V';
+      }
+    }
+    obj = drawAxis(svg, axis);
+    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, (axis.orientation == "vertical") ? parseFloat(style.height)*0.9 : parseFloat(style.width)*0.9, axis.orientation);
+  })
+}
+
 function rotate(x, y, line, text, degree, endPoint, orientation) {
   line.setAttributeNS(null, 'transform', `rotate(${degree}, ${x}, ${y})`);
 
@@ -133,9 +193,11 @@ function rotate(x, y, line, text, degree, endPoint, orientation) {
   } else {
     const rotateDegree = (degree > 0) ? degree : 360 + degree;
     rotateX = x + (currentX-x)*Math.cos(rotateDegree*Math.PI/180);
-    rotateY = y - (currentX-x)*Math.sin(rotateDegree*Math.PI/180) - 10;
+    rotateY = y + (currentX-x)*Math.sin(rotateDegree*Math.PI/180) - 10;
   }
 
+  text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
+
   text.setAttributeNS(null, 'x', `${rotateX}`);
-  text.setAttributeNS(null, 'y', `${rotateY}`);
+  text.setAttributeNS(null, 'y', `${rotateY-20}`);
 }

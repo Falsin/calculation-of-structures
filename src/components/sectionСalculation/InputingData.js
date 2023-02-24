@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { StyledAddBeam } from "./AddBeam";
-import { StyledAddChannel } from "./AddChannel";
-import { StyledAddEqualAnglesCorners } from "./AddEqualAnglesCorners";
-import { StyledAddUnequalAnglesCorners } from "./AddUnequalAnglesCorners";
-import { StyledAddRectangle } from "./AddRectangle";
+import AddBeam from "./AddBeam";
+import AddChannel from "./AddChannel";
+import AddEqualAnglesCorners from "./AddEqualAnglesCorners";
+import AddUnequalAnglesCorners from "./AddUnequalAnglesCorners";
+import AddRectangle from "./AddRectangle";
 import drawShapesArray from "../../javascript/drawShapesArray";
 import changeStatus from "../../javascript/changeStatusInList";
 
@@ -48,11 +48,11 @@ function InputingData({className, children, setResult, result}) {
             <h2 onClick={(e) => changeStatus(e)}>Простые сечения</h2>
             
             <ul style={{position: "relative"}}>
-              {<StyledAddBeam saveShape={saveShape} />}
-              {<StyledAddChannel saveShape={saveShape} />}
-              {<StyledAddEqualAnglesCorners saveShape={saveShape} />}
-              {<StyledAddUnequalAnglesCorners saveShape={saveShape} />}
-              {<StyledAddRectangle saveShape={saveShape} />}
+              {<AddBeam saveShape={saveShape} />}
+              {<AddChannel saveShape={saveShape} />}
+              {<AddEqualAnglesCorners saveShape={saveShape} />}
+              {<AddUnequalAnglesCorners saveShape={saveShape} />}
+              {<AddRectangle saveShape={saveShape} />}
             </ul>
           </li>
 

@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
+import { StyledSectionLi } from "./styledComponents";
 
-function AddRectangle({ saveShape, className, children }) {
+export default function AddRectangle({ saveShape }) {
   const [h, setH] = useState(100);
   const [b, setB] = useState(50);
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
-  const [isActive, setStatus] = useState(false);
 
   function drawRectangle() {
     const rectangleInstance = {
@@ -52,8 +51,8 @@ function AddRectangle({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
-      <h3 onClick={(e) => changeStatus(e)} className={isActive ? "active" : ""}>Прямоугольное сечение</h3>
+    <StyledSectionLi>
+      <h3 onClick={(e) => changeStatus(e)}>Прямоугольное сечение</h3>
 
       <div>
         <label htmlFor="rectangleHeight">Высота (h):</label>
@@ -70,28 +69,6 @@ function AddRectangle({ saveShape, className, children }) {
 
         <input type="button" value="Добавить" onClick={() => saveShape(drawRectangle())} />
       </div>
-    </li>
+    </StyledSectionLi>
   )
 }
-
-export const StyledAddRectangle = styled(AddRectangle)`
-  h3 {
-    margin: 0;
-
-    & ~ div {
-      overflow: hidden;
-      max-height: 0;
-      padding: 0;
-      transition: 1s;
-    }
-
-    &.active ~ div {
-        max-height: 1000px;
-        margin-top: 10px;
-      }
-  }
-
-  div div input {
-    width: 40px;
-  }
-`

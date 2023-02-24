@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
-import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
+import { StyledSectionLi } from "./styledComponents";
+import Preview from "./Preview";
 
-function AddEqualAnglesCorners({ saveShape, className, children }) {
+export default function AddEqualAnglesCorners({ saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [corner, setCorner] = useState(null);
   const [degree, setDegree] = useState(0);
-  const [isActive, setStatus] = useState(false); 
 
   const corners = useSelector(selectAllEqualAnglesCorners);
   const cornersStatus = useSelector(state => state.equalAnglesCorners.status);
@@ -68,8 +68,8 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
-      <h3 onClick={(e) => changeStatus(e)} className={isActive ? "active" : ""}>Равнополочный уголок</h3>
+    <StyledSectionLi>
+      <h3 onClick={(e) => changeStatus(e)}>Равнополочный уголок</h3>
 
       <div>
         <select onChange={(e) => {
@@ -88,61 +88,10 @@ function AddEqualAnglesCorners({ saveShape, className, children }) {
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview degree={degree} />
+        <Preview sectionName={"equalAnglesCorners"} degree={degree} />
 
         <input type="button" value="Добавить" onClick={() => saveShape(drawCorner())} />
       </div>
-    </li>
+    </StyledSectionLi>
   )
 }
-
-function Preview({degree}) {
-  const svg = useRef(null);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-  
-  const equalAngleCorner = useSelector(state => state.equalAnglesCorners.equalAnglesCorners[10]);
-  const {b, t} = !equalAngleCorner ? {} : equalAngleCorner;
-
-  useEffect(() => {
-    const style = getComputedStyle(svg.current);
-    setWidth(parseFloat(style.width))
-    setHeight(parseFloat(style.height))
-  })
-
-  return (
-    <svg ref={svg} style={{display: "block"}}>
-      {!equalAngleCorner 
-        ? null 
-        : <path 
-          d={`M ${width/2 - b/2}, ${height/2 - b/2} h ${t} v ${b - t} h ${b - t} v ${t} h ${-b} z`} 
-          transform={`rotate(${degree}, ${width/2}, ${height/2})`}
-          fill="white" 
-          stroke="black"  
-        />
-      }
-    </svg>
-  )
-}
-
-export const StyledAddEqualAnglesCorners = styled(AddEqualAnglesCorners)`
-  h3 {
-    margin: 0;
-
-    & ~ div {
-      overflow: hidden;
-      max-height: 0;
-      padding: 0;
-      transition: 1s;
-    }
-
-    &.active ~ div {
-        max-height: 1000px;
-        margin-top: 10px;
-      }
-  }
-
-  div div input {
-    width: 40px;
-  }
-`

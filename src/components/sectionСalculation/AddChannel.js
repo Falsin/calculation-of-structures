@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
-import styled from "styled-components";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
+import { StyledSectionLi } from "./styledComponents";
+import Preview from "./Preview";
 
-function AddChannel({ saveShape, className, children }) {
+export default function AddChannel({ saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [channel, setChannel] = useState(null);
   const [degree, setDegree] = useState(0);
-  const [isActive, setStatus] = useState(false);
 
   const channels = useSelector(selectAllChannels);
   const status = useSelector(state => state.channels.status);
@@ -67,8 +67,8 @@ function AddChannel({ saveShape, className, children }) {
   }
 
   return (
-    <li className={className}>
-      <h3 onClick={(e) => changeStatus(e)} className={isActive ? "active" : ""}>Швеллер</h3>
+    <StyledSectionLi>
+      <h3 onClick={(e) => changeStatus(e)}>Швеллер</h3>
 
       <div>
         <select onChange={(e) => {
@@ -87,61 +87,10 @@ function AddChannel({ saveShape, className, children }) {
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview degree={degree} />
+        <Preview sectionName={"channels"} degree={degree} />
 
         <input type="button" value="Добавить" onClick={() => saveShape(drawChannel())} />
       </div>
-    </li>
+    </StyledSectionLi>
   )
 }
-
-function Preview({degree}) {
-  const svg = useRef(null);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-  
-  const channel = useSelector(state => state.channels.channels[0]);
-  const {h, b, s, t} = !channel ? {} : channel;
-
-  useEffect(() => {
-    const style = getComputedStyle(svg.current);
-    setWidth(parseFloat(style.width))
-    setHeight(parseFloat(style.height))
-  })
-
-  return (
-    <svg ref={svg} style={{display: "block"}}>
-      {!channel 
-        ? null 
-        : <path 
-          d={`M ${width/2 - b/2}, ${height/2 - h/2} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`} 
-          transform={`rotate(${degree}, ${width/2}, ${height/2})`}
-          fill="white" 
-          stroke="black"  
-        />
-      }
-    </svg>
-  )
-}
-
-export const StyledAddChannel = styled(AddChannel)`
-  h3 {
-    margin: 0;
-
-    & ~ div {
-      overflow: hidden;
-      max-height: 0;
-      padding: 0;
-      transition: 1s;
-    }
-
-    &.active ~ div {
-        max-height: 1000px;
-        margin-top: 10px;
-      }
-  }
-
-  div div input {
-    width: 40px;
-  }
-`

@@ -6,7 +6,11 @@ export default function Preview({ sectionName, degree, activeCase }) {
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   
-  const section = useSelector(state => state[sectionName][sectionName][0]);
+  const section = useSelector(state => {
+    const sectionArr = state[sectionName][sectionName];
+    const reqElem = sectionArr.find(elem => (elem.h || elem.B || elem.b) >= 100);
+    return reqElem
+  });
   const {B, h, b, s, t} = !section ? {} : section;
 
   const drawStringSections = {
@@ -18,8 +22,8 @@ export default function Preview({ sectionName, degree, activeCase }) {
 
   useEffect(() => {
     const style = getComputedStyle(svg.current);
-    setWidth(parseFloat(style.width))
-    setHeight(parseFloat(style.height))
+    setWidth(parseFloat(style.width));
+    setHeight(parseFloat(style.height));
   })
 
   return (
@@ -31,7 +35,7 @@ export default function Preview({ sectionName, degree, activeCase }) {
           transform-origin={(activeCase == 2) ? "50% 50%" : ""}
           transform={(activeCase == 2) ? `scale(-1 1) rotate(${-degree})` : `rotate(${degree}, ${width/2}, ${height/2})`}
           fill="white" 
-          stroke="black"  
+          stroke="black"
         />
       }
     </svg>

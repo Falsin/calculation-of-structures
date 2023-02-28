@@ -1,20 +1,38 @@
 export default function createCirclesInSvg(shapeArr) {
-  shapeArr.forEach(elem => {
-    const shape = elem();
+  const circles = createCirclesInSvg.svg.querySelectorAll("circle");
+  circles.forEach(circle => circle.remove());
 
-    const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
+  return new Promise((res, rej) => {
+    shapeArr.forEach(elem => {
+      const shape = elem();
 
-    requireCoords.forEach(item => {
-      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttributeNS(null, "cx", `${shape.centerX + item.x}`);
-      circle.setAttributeNS(null, "cy", `${shape.centerY + item.y}`);
-      circle.setAttributeNS(null, "r", `${4}`);
-      circle.setAttributeNS(null, "fill", "blue");
-      circle.setAttributeNS(null, "transform", `rotate(${shape.degree}, ${shape.centerX}, ${shape.centerY})`);
+      console.log(shape)
+  
+      //const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
+      const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
+  
+      requireCoords.coordPoints.forEach((item, id) => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttributeNS(null, "cx", `${item.x}`);
+        circle.setAttributeNS(null, "cy", `${item.y}`);
+        circle.setAttributeNS(null, "r", `${4}`);
+        circle.setAttributeNS(null, "fill", "blue");
+        circle.setAttributeNS(null, "transform", `rotate(${shape.degree}, ${shape.centerX}, ${shape.centerY})`);
+  
+        circle.addEventListener("click", (e) => {
+          console.log(item)
+          console.log(requireCoords)
 
-      createCirclesInSvg.svg.appendChild(circle);
-    })
-  });
+          res({
+            x: item.x - requireCoords.relativeCenterX,
+            y: item.y - requireCoords.relativeCenterY,
+          });
+        })
+  
+        createCirclesInSvg.svg.appendChild(circle);
+      })
+    });
+  })
 }
 
 createCirclesInSvg.svg = null;

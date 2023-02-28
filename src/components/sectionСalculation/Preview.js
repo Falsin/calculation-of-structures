@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-export default function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isRadBtnContrPointsActive }) {
+export default function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive }) {
   const svg = useRef(null);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -62,7 +62,7 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     const circles = svg.current.querySelectorAll("circle");
     circles.forEach(elem => elem.remove());
 
-    if (section && isRadBtnContrPointsActive) {  
+    if (section && isBtnPointsActive) {  
       const arr = !activeCase ? coords[sectionName] : coords[sectionName][activeCase-1];
 
       arr.forEach((elem, id) => {

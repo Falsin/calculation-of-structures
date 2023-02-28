@@ -7,12 +7,17 @@ import AddUnequalAnglesCorners from "./AddUnequalAnglesCorners";
 import AddRectangle from "./AddRectangle";
 import drawShapesArray from "../../javascript/drawShapesArray";
 import changeStatus from "../../javascript/changeStatusInList";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
+  //const [isCoordModeActive, setCoordMode] = useState(false);
+  const [isPointsModeActive, setPointsMode] = useState(false);
 
-  const saveShape = (func) => setArrayShapes([...arrayShapes, func]);
+  const saveShape = (func) => {
+    return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
+  }
 
   useEffect(() => {
     draw()
@@ -23,6 +28,10 @@ function InputingData({className, children, setResult, result}) {
 
     drawShapesArray(svg, arrayShapes, result)
   }
+
+  useEffect(() => {
+    setPointsMode(arrayShapes.length ? true : false);
+  }, [arrayShapes.length])
   
   async function submit(e) {
     e.preventDefault();
@@ -39,20 +48,23 @@ function InputingData({className, children, setResult, result}) {
     setResult(response);
   }
 
+  createCirclesInSvg.svg = svg.current;
+  //console.log(createCirclesInSvg.svg.current)
+
   return (
     <div className={className}>
-      <SVG ref={svg} transform="scale(1, -1)" />
+      <SVG ref={svg} />
       <form onSubmit={submit}>
         <ul style={{position: "relative"}}>
           <li>
             <h2 onClick={(e) => changeStatus(e)}>Простые сечения</h2>
             
             <ul style={{position: "relative"}}>
-              {<AddBeam saveShape={saveShape} />}
-              {<AddChannel saveShape={saveShape} />}
-              {<AddEqualAnglesCorners saveShape={saveShape} />}
-              {<AddUnequalAnglesCorners saveShape={saveShape} />}
-              {<AddRectangle saveShape={saveShape} />}
+              {<AddBeam saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
+              {<AddChannel saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
+              {<AddEqualAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
+              {<AddUnequalAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
+              {<AddRectangle saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
             </ul>
           </li>
 
@@ -171,6 +183,7 @@ const SVG = styled.svg`
   width: 800px;
   height: 600px;
   border: 1px solid black;
+  transform: scale(1, -1);
 
   path.active {
     stroke: red;

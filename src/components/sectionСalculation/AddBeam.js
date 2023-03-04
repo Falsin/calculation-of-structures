@@ -7,6 +7,8 @@ import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
+import setCoordPoints from "../../javascript/setCoordPoints";
+import RadioFields from "./RadioFields";
 
 export default function AddBeam({saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -30,25 +32,21 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
     if (idCoordInArray !== null) {
       drawShapeUsingPoints()
     }
-  }, [idCoordInArray])
+  })
 
   async function drawShapeUsingPoints() {
     const shapeArr = saveShape();
-     
+
     const result = await createCirclesInSvg(shapeArr);
-    console.log(result)
-    setCenterX(result.x);
-    setCenterY(result.y);
-    drawShape(result.x, result.y)
+    drawShape(result.x, result.y);
   }
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
-      setIdCoordInArray(null);
+      setIdCoordInArray(null)
       createCirclesInSvg([]);
     }
   }, [isBtnPointsActive])
-
 
   const drawShape = (centerX, centerY) => saveShape(drawBeam(centerX, centerY))
 
@@ -59,38 +57,28 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       centerY: parseFloat(centerY),
       degree,
       type: "beam",
-      uniqid: uniqid()
+      uniqid: uniqid(),
     }
+
+    const {h, b, s, t} = beamInstance;
+
+    const coords = [
+      {x: -b/2, y: h/2},
+      {x: b/2, y: h/2},
+      {x: b/2, y: -h/2},
+      {x: -b/2, y: -h/2} 
+    ]
+    beamInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
+    beamInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return beamInstance;
       }
 
-      const xmlns = "http://www.w3.org/2000/svg";
-      const {h, b, s, t, degree} = beamInstance;
+      setCoordPoints.call(beamInstance, coords, [...arguments])
 
-      const coords = [
-        {x: -b/2, y: h/2},
-        {x: b/2, y: h/2},
-        {x: -b/2, y: -h/2},
-        {x: b/2, y: -h/2} 
-      ]
-
-      createCirclesInSvg.shapeCollectObj = {
-        [beamInstance.uniqid]: {
-          coordPoints: coords.map(elem => {
-            return {
-              x: relativeCenterX + elem.x,
-              y: relativeCenterY + elem.y,
-            }
-          }),
-          relativeCenterX,
-          relativeCenterY,
-        }
-      }
-
-      const path = document.createElementNS(xmlns, "path");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
@@ -142,45 +130,5 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
         />
       </div>
     </StyledSectionLi>
-  )
-}
-
-function RadioFields({ drawShape, setBtnPointsStatus, isPointsModeActive, centerX, setCenterX, centerY, setCenterY }) {
-  let id;
-
-  return (
-    <>
-      <div>
-        <label htmlFor={id = uniqid()}>Добавить по координатам центра тяжести</label>
-        <input 
-          type="radio" 
-          name="mode" 
-          id={id} 
-          readOnly 
-          defaultChecked={true} 
-          onChange={() => setBtnPointsStatus(false)}
-        />
-
-        <div>
-          <p>Координаты центра тяжести</p>
-          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
-              
-          <input type="button" value="Добавить" onClick={() => drawShape(centerX, centerY)} />
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor={id = uniqid()}>Добавить по контрольным точкам</label>
-        <input 
-          type="radio" 
-          name="mode" 
-          id={id} 
-          readOnly 
-          disabled={!isPointsModeActive ? true : false}
-          onChange={() => setBtnPointsStatus(true)}
-        />
-      </div>
-    </>
   )
 }

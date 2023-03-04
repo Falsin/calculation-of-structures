@@ -6,9 +6,6 @@ export default function createCirclesInSvg(shapeArr) {
     shapeArr.forEach(elem => {
       const shape = elem();
 
-      console.log(shape)
-  
-      //const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
       const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
   
       requireCoords.coordPoints.forEach((item, id) => {
@@ -18,14 +15,12 @@ export default function createCirclesInSvg(shapeArr) {
         circle.setAttributeNS(null, "r", `${4}`);
         circle.setAttributeNS(null, "fill", "blue");
         circle.setAttributeNS(null, "transform", `rotate(${shape.degree}, ${shape.centerX}, ${shape.centerY})`);
-  
-        circle.addEventListener("click", (e) => {
-          console.log(item)
-          console.log(requireCoords)
 
+        circle.addEventListener("click", () => {
           res({
-            x: item.x - requireCoords.relativeCenterX,
-            y: item.y - requireCoords.relativeCenterY,
+            x: shape.centerX + (item.x - requireCoords.relativeCenterX),
+            y: shape.centerY + (item.y - requireCoords.relativeCenterY),
+
           });
         })
   

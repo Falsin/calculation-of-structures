@@ -2,12 +2,12 @@ export default function createCirclesInSvg(shapeArr) {
   const circles = createCirclesInSvg.svg.querySelectorAll("circle");
   circles.forEach(circle => circle.remove());
 
-  return new Promise((res, rej) => {
-    shapeArr.forEach(elem => {
+  return Promise.any(shapeArr.map(elem => {
+    return new Promise((res, rej) => {
       const shape = elem();
 
       const requireCoords = createCirclesInSvg.shapeCollectObj[shape.uniqid];
-  
+    
       requireCoords.coordPoints.forEach((item, id) => {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttributeNS(null, "cx", `${item.x}`);
@@ -26,8 +26,8 @@ export default function createCirclesInSvg(shapeArr) {
   
         createCirclesInSvg.svg.appendChild(circle);
       })
-    });
-  })
+    })
+  }))
 }
 
 createCirclesInSvg.svg = null;

@@ -72,11 +72,10 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
         circle.setAttributeNS(null, "cy", `${height/2 + elem.y}`);
         circle.setAttributeNS(null, "r", `${4}`);
         circle.setAttributeNS(null, "fill", "blue");
-        circle.setAttributeNS(null, "transform", `rotate(${degree}, ${width/2}, ${height/2})`);
+        circle.setAttributeNS(null, "transform", `rotate(${-degree}, ${width/2}, ${height/2})`);
 
         circle.addEventListener("click", () => {
           setIdCoordInArray(id);
-          console.log(id)
         })
   
         svg.current.appendChild(circle);

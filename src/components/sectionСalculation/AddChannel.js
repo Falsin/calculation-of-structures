@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import createTextCoords from "../../javascript/addCoordText";
@@ -6,12 +6,17 @@ import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
+import setCoordPoints from "../../javascript/setCoordPoints";
+import RadioFields from "./RadioFields";
 
-export default function AddChannel({ saveShape }) {
+export default function AddChannel({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [channel, setChannel] = useState(null);
   const [degree, setDegree] = useState(0);
+  const [idCoordInArray, setIdCoordInArray] = useState(null);
+  const [isBtnPointsActive, setBtnPointsStatus] = useState(false);
 
   const channels = useSelector(selectAllChannels);
   const status = useSelector(state => state.channels.status);
@@ -23,7 +28,29 @@ export default function AddChannel({ saveShape }) {
     }
   })
 
-  function drawChannel() {
+  useEffect(() => {
+    if (idCoordInArray !== null) {
+      drawShapeUsingPoints()
+    }
+  })
+
+  async function drawShapeUsingPoints() {
+    const shapeArr = saveShape();
+
+    const result = await createCirclesInSvg(shapeArr);
+    drawShape(result.x, result.y);
+  }
+
+  useEffect(() => {
+    if (!isBtnPointsActive && idCoordInArray !== null) {
+      setIdCoordInArray(null)
+      createCirclesInSvg([]);
+    }
+  }, [isBtnPointsActive])
+
+  const drawShape = (centerX, centerY) => saveShape(drawChannel(centerX, centerY))
+
+  function drawChannel(centerX, centerY) {
     const channelInstance = {
       ...channel,
       centerX: parseFloat(centerX), 
@@ -33,15 +60,26 @@ export default function AddChannel({ saveShape }) {
       uniqid: uniqid() 
     }
 
+    const { h, b, s, t, z0 } = channelInstance;
+
+    const coords = [
+      {x: -z0*10, y: h/2},
+      {x: b - z0*10, y: h/2},
+      {x: b - z0*10, y: -h/2},
+      {x: -z0*10, y: -h/2}
+    ]
+
+    channelInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
+    channelInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
+
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return channelInstance;
       }
 
-      const xmlns = "http://www.w3.org/2000/svg";
-      const { h, b, s, t, z0, degree } = channelInstance;
+      setCoordPoints.call(channelInstance, coords, [...arguments])
 
-      const path = document.createElementNS(xmlns, "path");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - z0*10}, ${relativeCenterY - h/2} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`)
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
@@ -50,13 +88,6 @@ export default function AddChannel({ saveShape }) {
       path.setAttributeNS(null, "id", `${channelInstance.uniqid}`);
 
       svg.current.appendChild(path);
-
-      const coords = [
-        {x: -z0*10, y: h/2},
-        {x: b - z0*10, y: h/2},
-        {x: b - z0*10, y: -h/2},
-        {x: -z0*10, y: -h/2} 
-      ]
 
       createTextCoords(arguments, coords, degree);
     }
@@ -79,17 +110,25 @@ export default function AddChannel({ saveShape }) {
           {channels.map(channel => <option value={channel._id} key={channel._id}>{channel.no}</option>)}
         </select>
           
-        <div>
-          <p>Координаты</p>
-          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
-        </div>
+        <RadioFields
+          saveShape={saveShape} 
+          drawShape={drawShape} 
+          isPointsModeActive={isPointsModeActive} 
+          setBtnPointsStatus={setBtnPointsStatus} 
+          centerX={centerX}
+          setCenterX={setCenterX}
+          centerY={centerY}
+          setCenterY={setCenterY}
+        />
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview sectionName={"channels"} degree={degree} />
-
-        <input type="button" value="Добавить" onClick={() => saveShape(drawChannel())} />
+        <Preview 
+          sectionName={"channels"} 
+          degree={degree}
+          isBtnPointsActive={isBtnPointsActive} 
+          setIdCoordInArray={setIdCoordInArray}
+        />
       </div>
     </StyledSectionLi>
   )

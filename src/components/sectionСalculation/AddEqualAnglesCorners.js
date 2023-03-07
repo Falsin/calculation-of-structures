@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import createTextCoords from "../../javascript/addCoordText";
@@ -6,12 +6,17 @@ import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
+import setCoordPoints from "../../javascript/setCoordPoints";
+import RadioFields from "./RadioFields";
 
-export default function AddEqualAnglesCorners({ saveShape }) {
+export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [corner, setCorner] = useState(null);
   const [degree, setDegree] = useState(0);
+  const [idCoordInArray, setIdCoordInArray] = useState(null);
+  const [isBtnPointsActive, setBtnPointsStatus] = useState(false);
 
   const corners = useSelector(selectAllEqualAnglesCorners);
   const cornersStatus = useSelector(state => state.equalAnglesCorners.status);
@@ -24,7 +29,29 @@ export default function AddEqualAnglesCorners({ saveShape }) {
     }
   }, [])
 
-  function drawCorner() {
+  useEffect(() => {
+    if (idCoordInArray !== null) {
+      drawShapeUsingPoints()
+    }
+  })
+
+  async function drawShapeUsingPoints() {
+    const shapeArr = saveShape();
+
+    const result = await createCirclesInSvg(shapeArr);
+    drawShape(result.x, result.y);
+  }
+
+  useEffect(() => {
+    if (!isBtnPointsActive && idCoordInArray !== null) {
+      setIdCoordInArray(null)
+      createCirclesInSvg([]);
+    }
+  }, [isBtnPointsActive])
+
+  const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
+
+  function drawCorner(centerX, centerY) {
     const equalAnglesCornerInstance = {
       ...corner,
       centerX: parseFloat(centerX), 
@@ -34,15 +61,26 @@ export default function AddEqualAnglesCorners({ saveShape }) {
       Iy: corner.Ix,
       uniqid: uniqid()
     }
-    
+
+    const { b, t, z0 } = equalAnglesCornerInstance;
+
+    const coords = [
+      {x: -z0*10, y: b - z0*10},
+      {x: b - z0*10, y: -z0*10},
+      {x: -z0*10, y: -z0*10}
+    ]
+
+    equalAnglesCornerInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
+    equalAnglesCornerInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
+
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return equalAnglesCornerInstance;
       }
-      const xmlns = "http://www.w3.org/2000/svg";
-      const { b, t, z0, degree } = equalAnglesCornerInstance;
 
-      const path = document.createElementNS(xmlns, "path");
+      setCoordPoints.call(equalAnglesCornerInstance, coords, [...arguments])
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     
       path.setAttributeNS(null, "d", `M ${relativeCenterX - z0*10}, ${relativeCenterY - b + z0*10} h ${t} v ${b - t} h ${b - t} v ${t} h ${-b} z`);
       path.setAttributeNS(null, "fill", "white");
@@ -52,12 +90,6 @@ export default function AddEqualAnglesCorners({ saveShape }) {
       path.setAttributeNS(null, "id", `${equalAnglesCornerInstance.uniqid}`);
 
       svg.current.appendChild(path);
-
-      const coords = [
-        {x: -z0*10, y: b - z0*10},
-        {x: -z0*10, y: -z0*10},
-        {x: b - z0*10, y: -z0*10}
-      ]
 
       createTextCoords(arguments, coords, degree);
     }
@@ -80,17 +112,25 @@ export default function AddEqualAnglesCorners({ saveShape }) {
           {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
         </select>
           
-        <div>
-          <p>Координаты</p>
-          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
-        </div>
+        <RadioFields
+          saveShape={saveShape} 
+          drawShape={drawShape} 
+          isPointsModeActive={isPointsModeActive} 
+          setBtnPointsStatus={setBtnPointsStatus} 
+          centerX={centerX}
+          setCenterX={setCenterX}
+          centerY={centerY}
+          setCenterY={setCenterY}
+        />
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview sectionName={"equalAnglesCorners"} degree={degree} />
-
-        <input type="button" value="Добавить" onClick={() => saveShape(drawCorner())} />
+        <Preview 
+          sectionName={"equalAnglesCorners"} 
+          degree={degree}
+          isBtnPointsActive={isBtnPointsActive}  
+          setIdCoordInArray={setIdCoordInArray}
+        />
       </div>
     </StyledSectionLi>
   )

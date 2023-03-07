@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
-import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
+import setSectionData from "../../javascript/setSectionData";
 
 export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -54,43 +54,15 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
   const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
 
   function drawCorner(centerX, centerY) {
-    const unequalAnglesCornerInstance = {
-      ...corner,
-      centerX: parseFloat(centerX), 
-      centerY: parseFloat(centerY),
-      degree, 
-      type: "unequalAnglesCorner",
-      activeCase,
-      uniqid: uniqid()
-    }
-
-    const { B, b, t, x0, y0 } = unequalAnglesCornerInstance;
-    
-    let coords;
-
-    if (activeCase == 1) {
-      coords = [
-        {x: -x0*10, y: B - y0*10},
-        {x: -x0*10, y: -y0*10},
-        {x: b - x0*10, y: -y0*10},
-      ]
-    } else {
-      coords = [
-        {x: x0*10, y: B - y0*10},
-        {x: x0*10, y: -y0*10},
-        {x: -b + x0*10, y: -y0*10},
-      ]
-    }
-
-    unequalAnglesCornerInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
-    unequalAnglesCornerInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
+    const { sectionInstance, coords } = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray, activeCase)
+    const { B, b, t, x0, y0 } = sectionInstance;
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return unequalAnglesCornerInstance;
+        return sectionInstance;
       }
 
-      setCoordPoints.call(unequalAnglesCornerInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, coords, [...arguments])
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - x0*10}, ${relativeCenterY - B + y0*10} h ${t} v ${B - t} h ${b - t} v ${t} h ${-b} z`);
@@ -98,7 +70,7 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -degree : degree})`);
-      path.setAttributeNS(null, "id", `${unequalAnglesCornerInstance.uniqid}`);
+      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
 
       svg.current.appendChild(path);
 

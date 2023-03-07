@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redux/equalAngleCornerSlice";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
-import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
+import setSectionData from "../../javascript/setSectionData";
 
 export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -52,33 +52,15 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
   const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
 
   function drawCorner(centerX, centerY) {
-    const equalAnglesCornerInstance = {
-      ...corner,
-      centerX: parseFloat(centerX), 
-      centerY: parseFloat(centerY),
-      degree, 
-      type: "equalAnglesCorner",
-      Iy: corner.Ix,
-      uniqid: uniqid()
-    }
-
-    const { b, t, z0 } = equalAnglesCornerInstance;
-
-    const coords = [
-      {x: -z0*10, y: b - z0*10},
-      {x: b - z0*10, y: -z0*10},
-      {x: -z0*10, y: -z0*10}
-    ]
-
-    equalAnglesCornerInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
-    equalAnglesCornerInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
+    const { sectionInstance, coords } = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray)
+    const { b, t, z0 } = sectionInstance;
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return equalAnglesCornerInstance;
+        return sectionInstance;
       }
 
-      setCoordPoints.call(equalAnglesCornerInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, coords, [...arguments])
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     
@@ -87,7 +69,7 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
-      path.setAttributeNS(null, "id", `${equalAnglesCornerInstance.uniqid}`);
+      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
 
       svg.current.appendChild(path);
 

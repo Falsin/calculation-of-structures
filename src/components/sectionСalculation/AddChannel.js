@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
-import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
+import setSectionData from "../../javascript/setSectionData";
 
 export default function AddChannel({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -51,33 +51,15 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
   const drawShape = (centerX, centerY) => saveShape(drawChannel(centerX, centerY))
 
   function drawChannel(centerX, centerY) {
-    const channelInstance = {
-      ...channel,
-      centerX: parseFloat(centerX), 
-      centerY: parseFloat(centerY),
-      degree,
-      type: "channel",
-      uniqid: uniqid() 
-    }
-
-    const { h, b, s, t, z0 } = channelInstance;
-
-    const coords = [
-      {x: -z0*10, y: h/2},
-      {x: b - z0*10, y: h/2},
-      {x: b - z0*10, y: -h/2},
-      {x: -z0*10, y: -h/2}
-    ]
-
-    channelInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
-    channelInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
+    const { sectionInstance, coords } = setSectionData.call(channel, centerX, centerY, degree, idCoordInArray)
+    const { h, b, s, t, z0 } = sectionInstance;
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return channelInstance;
+        return sectionInstance;
       }
 
-      setCoordPoints.call(channelInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, coords, [...arguments])
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - z0*10}, ${relativeCenterY - h/2} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`)
@@ -85,7 +67,7 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
-      path.setAttributeNS(null, "id", `${channelInstance.uniqid}`);
+      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
 
       svg.current.appendChild(path);
 

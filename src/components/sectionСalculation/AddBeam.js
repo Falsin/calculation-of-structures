@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import createTextCoords from "../../javascript/addCoordText";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 import changeStatus from "../../javascript/changeStatusInList";
-import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
+import setSectionData from "../../javascript/setSectionData";
 
 export default function AddBeam({saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -38,6 +38,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
     const shapeArr = saveShape();
 
     const result = await createCirclesInSvg(shapeArr);
+    console.log(result)
     drawShape(result.x, result.y);
   }
 
@@ -51,32 +52,15 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
   const drawShape = (centerX, centerY) => saveShape(drawBeam(centerX, centerY))
 
   function drawBeam(centerX, centerY) {
-    const beamInstance = {
-      ...beam,
-      centerX: parseFloat(centerX), 
-      centerY: parseFloat(centerY),
-      degree,
-      type: "beam",
-      uniqid: uniqid(),
-    }
-
-    const {h, b, s, t} = beamInstance;
-
-    const coords = [
-      {x: -b/2, y: h/2},
-      {x: b/2, y: h/2},
-      {x: b/2, y: -h/2},
-      {x: -b/2, y: -h/2} 
-    ]
-    beamInstance.centerX = (idCoordInArray === null) ? centerX : centerX - coords[idCoordInArray].x;
-    beamInstance.centerY = (idCoordInArray === null) ? centerY : centerY - coords[idCoordInArray].y;
-
+    const { sectionInstance, coords } = setSectionData.call(beam, centerX, centerY, degree, idCoordInArray)
+    const { h, b, s, t } = sectionInstance;
+    
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return beamInstance;
+        return sectionInstance;
       }
 
-      setCoordPoints.call(beamInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, coords, [...arguments])
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
@@ -84,7 +68,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${degree})`);
-      path.setAttributeNS(null, "id", `${beamInstance.uniqid}`);
+      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
       
       svg.current.appendChild(path);
 

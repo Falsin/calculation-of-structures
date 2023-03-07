@@ -11,6 +11,7 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     const reqElem = sectionArr.find(elem => (elem.h || elem.B || elem.b) >= 100);
     return reqElem
   });
+
   const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;
 
   const drawStringSections = {
@@ -22,32 +23,32 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
 
   const coords = {
     beams: [
-      {x: -b/2, y: -h/2},
-      {x: b/2, y: -h/2},
       {x: -b/2, y: h/2},
-      {x: b/2, y: h/2} 
+      {x: b/2, y: h/2},
+      {x: b/2, y: -h/2},
+      {x: -b/2, y: -h/2}
     ],
     channels: [
-      {x: -b/2, y: -h/2},
-      {x: b/2, y: -h/2},
       {x: -b/2, y: h/2},
-      {x: b/2, y: h/2}
+      {x: b/2, y: h/2},
+      {x: b/2, y: -h/2},
+      {x: -b/2, y: -h/2},
     ],
     equalAnglesCorners: [
-      {x: -b/2, y: -b/2},
       {x: -b/2, y: b/2},
-      {x: b/2, y: b/2}
+      {x: b/2, y: -b/2},
+      {x: -b/2, y: -b/2}
     ],
     unequalAnglesCorners: [
       [
-        {x: -b/2, y: -B/2},
         {x: -b/2, y: B/2},
-        {x: b/2, y: B/2},
+        {x: b/2, y: -B/2},
+        {x: -b/2, y: -B/2}
       ],
       [
-        {x: b/2, y: -B/2},
         {x: b/2, y: B/2},
-        {x: -b/2, y: B/2},
+        {x: b/2, y: -B/2},
+        {x: -b/2, y: -B/2},
       ]
     ]
   }
@@ -74,7 +75,8 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
         circle.setAttributeNS(null, "transform", `rotate(${degree}, ${width/2}, ${height/2})`);
 
         circle.addEventListener("click", () => {
-          setIdCoordInArray(id)
+          setIdCoordInArray(id);
+          console.log(id)
         })
   
         svg.current.appendChild(circle);
@@ -83,13 +85,13 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   })
 
   return (
-    <svg ref={svg} style={{display: "block", maxHeight: "150px"}}>
+    <svg ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>
       {!section 
         ? null 
         : <path 
           d={drawStringSections[sectionName]}
-          transform-origin={(activeCase == 2) ? "50% 50%" : ""}
-          transform={(activeCase == 2) ? `scale(-1 1) rotate(${-degree})` : `rotate(${degree}, ${width/2}, ${height/2})`}
+          transform-origin="50% 50%"
+          transform={(activeCase == 2) ? `scale(-1 -1) rotate(${-degree})` : `scale(1 -1) rotate(${degree})`}
           fill="white" 
           stroke="black"
         />

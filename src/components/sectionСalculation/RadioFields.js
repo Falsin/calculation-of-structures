@@ -3,6 +3,7 @@ import uniqid from 'uniqid';
 
 export default function RadioFields({ drawShape, setBtnPointsStatus, isPointsModeActive, centerX, setCenterX, centerY, setCenterY }) {
   let id;
+  const name = uniqid();
 
   return (
     <>
@@ -10,7 +11,7 @@ export default function RadioFields({ drawShape, setBtnPointsStatus, isPointsMod
         <label htmlFor={id = uniqid()}>Добавить по координатам центра тяжести</label>
         <input 
           type="radio" 
-          name="mode" 
+          name={name} 
           id={id} 
           readOnly 
           defaultChecked={true} 
@@ -30,7 +31,7 @@ export default function RadioFields({ drawShape, setBtnPointsStatus, isPointsMod
         <label htmlFor={id = uniqid()}>Добавить по контрольным точкам</label>
         <input 
           type="radio" 
-          name="mode" 
+          name={name} 
           id={id} 
           readOnly 
           disabled={!isPointsModeActive ? true : false}

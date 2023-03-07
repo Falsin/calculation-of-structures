@@ -1,3 +1,5 @@
+import calcRotateCoords from "./calcRotateCoords";
+
 export default function createCirclesInSvg(shapeArr) {
   const circles = createCirclesInSvg.svg.querySelectorAll("circle");
   circles.forEach(circle => circle.remove());
@@ -10,17 +12,22 @@ export default function createCirclesInSvg(shapeArr) {
     
       requireCoords.coordPoints.forEach((item, id) => {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttributeNS(null, "cx", `${item.x}`);
-        circle.setAttributeNS(null, "cy", `${item.y}`);
         circle.setAttributeNS(null, "r", `${4}`);
         circle.setAttributeNS(null, "fill", "blue");
-        circle.setAttributeNS(null, "transform", `rotate(${shape.degree}, ${shape.centerX}, ${shape.centerY})`);
+
+        const calcCoords = {
+          x: item.x - requireCoords.relativeCenterX,
+          y: item.y - requireCoords.relativeCenterY
+        }
+
+        const { rotateX, rotateY } = calcRotateCoords(calcCoords, requireCoords.relativeCenterX, requireCoords.relativeCenterY, shape.degree)
+        circle.setAttributeNS(null, "cx", `${rotateX}`);
+        circle.setAttributeNS(null, "cy", `${rotateY}`);
 
         circle.addEventListener("click", () => {
           res({
-            x: shape.centerX + (item.x - requireCoords.relativeCenterX),
-            y: shape.centerY + (item.y - requireCoords.relativeCenterY),
-
+            x: shape.centerX + (rotateX - requireCoords.relativeCenterX),
+            y: shape.centerY + (rotateY - requireCoords.relativeCenterY),
           });
         })
   

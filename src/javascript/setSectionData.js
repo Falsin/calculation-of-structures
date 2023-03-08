@@ -8,6 +8,7 @@ export default function setSectionData(centerX, centerY, degree, idCoordInArray,
     centerY: parseFloat(centerY),
     degree,
     uniqid: uniqid(),
+    isActive: false,
   }
 
   const { h, B, b, s, t, z0, x0, y0 } = sectionInstance;

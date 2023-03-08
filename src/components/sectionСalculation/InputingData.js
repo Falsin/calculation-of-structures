@@ -8,11 +8,11 @@ import AddRectangle from "./AddRectangle";
 import drawShapesArray from "../../javascript/drawShapesArray";
 import changeStatus from "../../javascript/changeStatusInList";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
+import SectionComposition from "./SectionComposition";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
-  //const [isCoordModeActive, setCoordMode] = useState(false);
   const [isPointsModeActive, setPointsMode] = useState(false);
 
   const saveShape = (func) => {
@@ -49,7 +49,6 @@ function InputingData({className, children, setResult, result}) {
   }
 
   createCirclesInSvg.svg = svg.current;
-  //console.log(createCirclesInSvg.svg.current)
 
   return (
     <div className={className}>
@@ -81,78 +80,6 @@ function InputingData({className, children, setResult, result}) {
         <button>рассчитать</button>
       </form>
     </div>
-  )
-}
-
-function SectionComposition({arrayShapes, setArrayShapes}) {
-  const [selectedId, setSelectedId] = useState(null);
-  const lastActiveId = useRef(null);
-
-  const sectionNames = {
-    beam: "Двутавр",
-    channel: "Швеллер",
-    equalAnglesCorner: "Равнополочный уголок",
-    unequalAnglesCorner: "Неравнополочный уголок",
-    rectangle: "Прямоугольное сечение"
-  }
-
-  const keys = ["centerX", "centerY", "degree"];
-
-  useEffect(() => {
-    if (lastActiveId.current) {
-      const path = document.getElementById(lastActiveId.current);
-      path.classList.remove("active");
-    }
-
-    if (selectedId) {
-      const path = document.getElementById(selectedId);
-      path.classList.add("active");
-    }
-
-    lastActiveId.current = selectedId;
-  }, [selectedId])
-
-  function changeActiveSection(uniqid, eventType) {
-    if (!selectedId) {
-      const path = document.getElementById(uniqid);
-
-      if (eventType == "mouseleave") {
-        path.classList.remove("active");
-      } else {
-        path.classList.add("active");
-      }
-    } 
-  }
-
-
-  return (
-    <ul>
-      {arrayShapes.map(elem => {
-        const shape = elem();
-
-        return (
-          <li 
-            style={{border: "solid 1px black"}} 
-            onMouseEnter={(e) => changeActiveSection(shape.uniqid, e.type)} 
-            onMouseLeave={(e) => changeActiveSection(shape.uniqid, e.type)}
-            key={shape.uniqid}
-          >
-            <h3 className={selectedId == shape.uniqid ? "active" : ""} 
-              onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}
-            >
-              {sectionNames[shape.type]}
-            </h3>
-
-            <ul>{keys.map(key => <li>{key}: {shape[key]}</li>)}</ul>
-
-            <button onClick={() => {
-              const filteredArray = arrayShapes.filter(func => func().uniqid != shape.uniqid);
-              setArrayShapes(filteredArray)
-            }} type="button">Удалить</button>
-        </li>
-        )
-      })}
-    </ul>
   )
 }
 

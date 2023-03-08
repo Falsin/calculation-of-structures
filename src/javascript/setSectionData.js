@@ -35,7 +35,6 @@ export default function setSectionData(centerX, centerY, degree, idCoordInArray,
       {x: -z0*10, y: -z0*10}
     ]
   } else {
-    console.log(activeCase)
     if (activeCase == 1) {
       coords = [
         {x: -x0*10, y: B - y0*10},
@@ -51,11 +50,12 @@ export default function setSectionData(centerX, centerY, degree, idCoordInArray,
     }
   }
 
-  const coordX = (idCoordInArray === null) ? centerX : centerX - calcRotateCoords(coords[idCoordInArray], 0, 0, degree).rotateX;
-  const coordY = (idCoordInArray === null) ? centerY : centerY - calcRotateCoords(coords[idCoordInArray], 0, 0, degree).rotateY;
+  const { rotateX = 0, rotateY = 0 } = (idCoordInArray !== null) 
+                                        ? calcRotateCoords(coords[idCoordInArray], 0, 0, degree) 
+                                        : {}
 
-  sectionInstance.centerX = coordX;
-  sectionInstance.centerY = coordY;
+  sectionInstance.centerX = centerX - rotateX;
+  sectionInstance.centerY = centerY - rotateY;                                 
 
   return { sectionInstance, coords }
 }

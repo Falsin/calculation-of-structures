@@ -38,8 +38,8 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
     const shapeArr = saveShape();
 
     const result = await createCirclesInSvg(shapeArr);
-    console.log(result)
     drawShape(result.x, result.y);
+    setIdCoordInArray(null);
   }
 
   useEffect(() => {

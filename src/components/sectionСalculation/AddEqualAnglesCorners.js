@@ -40,6 +40,7 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
 
     const result = await createCirclesInSvg(shapeArr);
     drawShape(result.x, result.y);
+    setIdCoordInArray(null);
   }
 
   useEffect(() => {

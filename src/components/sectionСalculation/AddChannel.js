@@ -39,11 +39,12 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
 
     const result = await createCirclesInSvg(shapeArr);
     drawShape(result.x, result.y);
+    setIdCoordInArray(null);
   }
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
-      setIdCoordInArray(null)
+      setIdCoordInArray(null);
       createCirclesInSvg([]);
     }
   }, [isBtnPointsActive])

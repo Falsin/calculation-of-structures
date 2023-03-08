@@ -70,12 +70,16 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
       path.setAttributeNS(null, "fill", "white");
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
-      path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -degree : degree})`);
+      path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -sectionInstance.degree : sectionInstance.degree})`);
       path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
+
+      if (sectionInstance.isActive) {
+        path.classList.add("active");
+      }
 
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, degree);
+      createTextCoords(arguments, coords, sectionInstance.degree);
     }
   }
 

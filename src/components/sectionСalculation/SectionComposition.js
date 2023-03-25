@@ -12,10 +12,10 @@ export default function SectionComposition({arrayShapes, setArrayShapes}) {
   }
 
   useEffect(() => {
-    setActiveSection()
+    changeActiveSection()
   }, [selectedId])
 
-  function setActiveSection() {
+  function changeActiveSection() {
     const shapes = arrayShapes.map(elem => elem());
 
     const activeSection = shapes.find(elem => elem.isActive == true);
@@ -36,7 +36,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes}) {
     }
   }
 
-  function changeActiveSection(uniqid, eventType) {
+  function setActiveSection(uniqid, eventType) {
     const shapes = arrayShapes.map(elem => elem());
 
     if (!selectedId) {
@@ -61,8 +61,8 @@ export default function SectionComposition({arrayShapes, setArrayShapes}) {
         return (
           <li 
             style={{border: "solid 1px black"}} 
-            onMouseEnter={(e) => changeActiveSection(shape.uniqid, e.type)} 
-            onMouseLeave={(e) => changeActiveSection(shape.uniqid, e.type)}
+            onMouseEnter={(e) => setActiveSection(shape.uniqid, e.type)} 
+            onMouseLeave={(e) => setActiveSection(shape.uniqid, e.type)}
             key={shape.uniqid}
           >
             <h3 className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>

@@ -104,6 +104,14 @@ const StyledInputingData = styled(InputingData)`
     max-height: 1000px;
     margin-top: 10px;
   }
+
+  g {
+    path {
+      transition-property: transform;
+      transition-duration: 1s;
+      transition-timing-function: linear;
+    }
+  }
 `
 
 const SVG = styled.svg`

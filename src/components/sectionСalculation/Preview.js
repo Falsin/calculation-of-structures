@@ -8,7 +8,8 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [deg, setDeg] = useState(degree);
-  const [axisArr, setAxisArr] = useState([])
+  const [axisArr, setAxisArr] = useState([]);
+  const [circles, setCircles] = useState([]);
   
   const section = useSelector(state => {
     const sectionArr = state[sectionName][sectionName];
@@ -42,8 +43,12 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     axisArr.forEach(obj => {
       Object.entries(obj)
         .filter(([key]) => key != "text")
-        .forEach(([, val]) => val.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`))
+        .forEach(([, val]) => val.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
     })
+
+    console.log(circles)
+
+    circles.forEach(elem => elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
   }, [activeCase])
 
   useEffect(() => {
@@ -111,22 +116,22 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     if (section && isBtnPointsActive) {  
       const arr = !activeCase ? coords[sectionName] : coords[sectionName][activeCase-1];
 
-      arr.forEach((elem, id) => {
+      const circlesArr = arr.map((elem, id) => {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttributeNS(null, "cx", `${width/2 + elem.x}`);
         circle.setAttributeNS(null, "cy", `${height/2 + elem.y}`);
         circle.setAttributeNS(null, "r", `${4}`);
         circle.setAttributeNS(null, "fill", "blue");
-        circle.setAttributeNS(null, "transform", `rotate(${-deg}, ${width/2}, ${height/2})`);
+        circle.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
 
-        circle.addEventListener("click", () => {
-          setIdCoordInArray(id);
-        })
-  
-        svg.current.appendChild(circle);
+        circle.addEventListener("click", () => setIdCoordInArray(id))
+        g.current.appendChild(circle);
+        return circle;
       });
+
+      setCircles(circlesArr)
     }
-  })
+  }, [isBtnPointsActive]);
 
   return (
     <svg ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>

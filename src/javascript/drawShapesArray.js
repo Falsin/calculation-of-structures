@@ -1,3 +1,5 @@
+import uniqid from 'uniqid';
+
 export default function drawShapesArray(svg, arrayShapes, result) {
   const style = getComputedStyle(svg.current);
 
@@ -21,12 +23,13 @@ export default function drawShapesArray(svg, arrayShapes, result) {
     arr.forEach(axis => {
       if (axis.axisName == "Yсл" || axis.axisName == "Xсл") {
         if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
-          drawAxis(svg, axis);
+          Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
+          
         } else if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
-          drawAxis(svg, axis);
+          Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
         }
       } else {
-        drawAxis(svg, axis);
+        Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
       }
     })
   })
@@ -36,32 +39,32 @@ export default function drawShapesArray(svg, arrayShapes, result) {
   }
 }
 
-function drawAxis(svg, {x1, y1, x2, y2, axisName}) {
+function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   const xmlns = "http://www.w3.org/2000/svg";
+  const id = uniqid();
 
   const defs = document.createElementNS(xmlns, "defs");
 
   const marker = document.createElementNS(xmlns, "marker");
-  marker.setAttributeNS(null, "id", `arrowhead${axisName}`);
+  marker.setAttributeNS(null, "id", id);
   marker.setAttributeNS(null, "markerWidth", "8");
   marker.setAttributeNS(null, "markerHeight", "10");
   marker.setAttributeNS(null, "refX", "4");
   marker.setAttributeNS(null, "refY", "0");
-  marker.setAttributeNS(null, "stroke", "black");
+  marker.setAttributeNS(null, "stroke", color);
   marker.setAttributeNS(null, "orient", `${x1 == x2 ? '0' : '-90'}`);
 
   const triangle = document.createElementNS(xmlns, "path");
   triangle.setAttributeNS(null, "d", `M 0.5, 0 l 3.5 10 l 3.5 -10`);
-  triangle.setAttributeNS(null, "stroke", "black");
+  triangle.setAttributeNS(null, "fill", color);
 
   marker.appendChild(triangle);
   defs.appendChild(marker);
-  svg.current.appendChild(defs)
 
   const line = document.createElementNS(xmlns, "path");
   line.setAttributeNS(null, "d", `M ${x1}, ${y1} L ${x2}, ${y2}`);
-  line.setAttributeNS(null, "marker-end", `url(#arrowhead${axisName}`);
-  line.setAttributeNS(null, "stroke", "black");
+  line.setAttributeNS(null, "marker-end", `url(#${id})`);
+  line.setAttributeNS(null, "stroke", color);
 
   const text = document.createElementNS(xmlns, "text");
   text.setAttributeNS(null, "x", `${x2}`);
@@ -71,10 +74,7 @@ function drawAxis(svg, {x1, y1, x2, y2, axisName}) {
   text.setAttributeNS(null, "text-anchor", `middle`);
   text.textContent = axisName;
 
-  svg.current.appendChild(line);
-  svg.current.appendChild(text);
-
-  return { line, text }
+  return { line, text, defs }
 }
 
 function createAxisArray(style, relativeCenterX, relativeCenterY, id) {
@@ -134,13 +134,9 @@ function auxiliaryCalc(arrayShapes, style) {
   const centerXWindow = parseFloat(style.width) / 2;
   const centerYWindow = parseFloat(style.height) / 2;
 
-  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => {
-    return shapeFunc().centerX;
-  })
+  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => shapeFunc().centerX);
 
-  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => {
-    return shapeFunc().centerY;
-  })
+  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => shapeFunc().centerY);
 
   const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
   const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
@@ -158,7 +154,6 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, svg) {
   const arr = createAxisArray(style, relativeCenterX, relativeCenterY).mainAxes;
   arr.forEach(axis => drawAxis(svg, axis));
   arr.forEach(axis => {
-    let obj;
 
     if (result.degree.value <= 45 && result.degree.value >= -45) {
       if (axis.orientation == "vertical") {
@@ -173,13 +168,14 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, svg) {
         axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V';
       }
     }
-    obj = drawAxis(svg, axis);
-    rotate(relativeCenterX, relativeCenterY, obj.line, obj.text, result.degree.value, (axis.orientation == "vertical") ? parseFloat(style.height)*0.9 : parseFloat(style.width)*0.9, axis.orientation);
+
+    rotate(relativeCenterX, relativeCenterY, drawAxis(svg, axis), result.degree.value);
   })
 }
 
-function rotate(x, y, line, text, degree, endPoint, orientation) {
-  line.setAttributeNS(null, 'transform', `rotate(${degree}, ${x}, ${y})`);
+function rotate(x, y, { line, text }, degree) {
+  line.setAttributeNS(null, "transform-origin", `${x} ${y}`);
+  line.setAttributeNS(null, 'transform', `rotate(${degree})`);
 
   const currentX = text.x.animVal[0].value;
   const currentY = text.y.animVal[0].value;
@@ -201,3 +197,5 @@ function rotate(x, y, line, text, degree, endPoint, orientation) {
   text.setAttributeNS(null, 'x', `${rotateX}`);
   text.setAttributeNS(null, 'y', `${rotateY-20}`);
 }
+
+export { createAxisArray, drawAxis, rotate };

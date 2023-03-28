@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { createAxisArray, drawAxis, rotate } from "../../javascript/drawShapesArray";
+import { createAxisArray, drawAxis } from "../../javascript/drawShapesArray";
 
 export default function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive }) {
   const svg = useRef(null);
@@ -24,43 +24,26 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   }, [degree]);
 
   useEffect(() => {
-    if (section) {
-      const style = getComputedStyle(svg.current);
-
-      const dist = z0*10 || x0*10 || b/2;
-      let centerX = width/2 + (activeCase == 2 ? b/2 - dist : - b/2 + dist);
-
-      const centerY = height/2 - (B/2 || h/2 || b/2) + (h/2 || z0*10 || y0*10)
-
-      const arr = createAxisArray(style, centerX, centerY, 0).commonAxes
-        .filter(elem => elem.axisName != `Yсл` && elem.axisName != `Xсл`);
-      
-      setAxisArr(arr.map((axis, id) => drawAxis(axis, (id == 0) ? "red" : "green")))
-    }
+    createAxis()
   }, [section]);
 
   useEffect(() => {
-    axisArr.forEach(obj => {
-      Object.entries(obj)
-        .filter(([key]) => key != "text")
-        .forEach(([, val]) => val.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
-    })
-
-    console.log(circles)
-
-    circles.forEach(elem => elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
+    transformDependingOnActiveCase()
   }, [activeCase])
 
   useEffect(() => {
-    if (axisArr.length) {
-      axisArr.forEach(obj => {
-        Object.entries(obj)
-          .filter(([key]) => key != "text")
-          .forEach(([, value]) => g.current.appendChild(value));
-        obj.line.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
-      })
-    }
+    addAxisInNode()
   }, [axisArr])
+
+  useEffect(() => {
+    const style = getComputedStyle(svg.current);
+    setWidth(parseFloat(style.width));
+    setHeight(parseFloat(style.height));
+  }, [])
+
+  useEffect(() => {
+    createCircles()
+  }, [isBtnPointsActive]);
 
   const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;
 
@@ -103,13 +86,42 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     ]
   }
 
-  useEffect(() => {
-    const style = getComputedStyle(svg.current);
-    setWidth(parseFloat(style.width));
-    setHeight(parseFloat(style.height));
-  }, [])
+  function createAxis() {
+    if (section) {
+      const style = getComputedStyle(svg.current);
 
-  useEffect(() => {
+      const dist = z0*10 || x0*10 || b/2;
+      let centerX = width/2 + (activeCase == 2 ? b/2 - dist : - b/2 + dist);
+
+      const centerY = height/2 - (B/2 || h/2 || b/2) + (h/2 || z0*10 || y0*10);
+
+      const commonAxes = [
+        {x: centerX},
+        {y: centerY},
+      ]
+
+      const arr = createAxisArray({style, commonAxes, id: 0})
+      //const arr = createAxisArray({style, commonAxisArr, id: 0})
+      
+      setAxisArr(createNodeArr(arr))
+    }
+  }
+
+  function addAxisInNode() {
+    if (axisArr.length) {
+      axisArr.forEach(elem => g.current.appendChild(elem))
+    }
+  }
+
+  function transformDependingOnActiveCase() {
+    axisArr.forEach(elem => {
+      elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`);
+    })
+
+    circles.forEach(elem => elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
+  }
+
+  function createCircles() {
     const circles = svg.current.querySelectorAll("circle");
     circles.forEach(elem => elem.remove());
 
@@ -131,7 +143,15 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
 
       setCircles(circlesArr)
     }
-  }, [isBtnPointsActive]);
+  }
+  
+  function createNodeArr(arr) {
+    return arr.reduce((prev, curr, id) => {
+      const { line, defs } = drawAxis(curr, (id == 1) ? "red" : "green");
+      line.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
+      return [...prev, line, defs]
+    }, [])
+  }
 
   return (
     <svg ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>

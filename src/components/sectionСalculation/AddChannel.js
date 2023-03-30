@@ -76,14 +76,13 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
 
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance.degree);
+      createTextCoords(arguments, coords, sectionInstance);
     }
   }
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);
   }
-
   return (
     <StyledSectionLi>
       <h3 onClick={(e) => changeStatus(e)}>Швеллер</h3>

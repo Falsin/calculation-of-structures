@@ -79,7 +79,7 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
 
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance.degree);
+      createTextCoords(arguments, coords, sectionInstance);
     }
   }
 

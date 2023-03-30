@@ -76,7 +76,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance.degree);
+      createTextCoords(arguments, coords, sectionInstance);
     }
   }
 

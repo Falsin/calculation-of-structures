@@ -12,8 +12,12 @@ import SectionComposition from "./SectionComposition";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
+  const sourceGroup = useRef(null);
+  const resultGroup = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
   const [isPointsModeActive, setPointsMode] = useState(false);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0)
 
   const saveShape = (func) => {
     return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
@@ -23,10 +27,16 @@ function InputingData({className, children, setResult, result}) {
     draw()
   }, [arrayShapes, result])
 
-  function draw() {
-    svg.current.replaceChildren();
+  useEffect(() => {
+    const style = getComputedStyle(svg.current);
+    setWidth(parseFloat(style.width));
+    setHeight(parseFloat(style.height));
+  }, [svg])
 
-    drawShapesArray(svg, arrayShapes, result)
+  function draw() {
+    sourceGroup.current.replaceChildren();
+
+    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result)
   }
 
   useEffect(() => {
@@ -48,11 +58,15 @@ function InputingData({className, children, setResult, result}) {
     setResult(response);
   }
 
-  createCirclesInSvg.svg = svg.current;
+  createCirclesInSvg.svg = sourceGroup.current;
 
   return (
     <div className={className}>
-      <SVG ref={svg} />
+      <SVG ref={svg}>
+        <g ref={sourceGroup}></g>
+        {!width ? null : <g ref={resultGroup} style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`, transformOrigin: `${width/2}px ${height/2}px`}}>
+          </g>}
+      </SVG>
       <form onSubmit={submit}>
         <ul style={{position: "relative"}}>
           <li>
@@ -105,8 +119,17 @@ const StyledInputingData = styled(InputingData)`
     margin-top: 10px;
   }
 
-  g {
-    path {
+  form {
+    svg > path,
+    g > path {
+      transition-property: transform;
+      transition-duration: 1s;
+      transition-timing-function: linear;
+    }
+
+    svg g,
+    svg circle,
+    svg g text {
       transition-property: transform;
       transition-duration: 1s;
       transition-timing-function: linear;
@@ -122,6 +145,11 @@ const SVG = styled.svg`
 
   path.active {
     stroke: red;
+  }
+
+  & g {
+    width: inherit;
+    height: inherit;
   }
 `
 

@@ -1,13 +1,9 @@
 export default function createTextCoords(arrayProps, array, degree) {
   const [svg, relativeCenterX, relativeCenterY] = arrayProps;
 
-  const style = getComputedStyle(svg.current);
-  const width = parseFloat(style.width);
-  const height = parseFloat(style.height);
-
   const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
   group.setAttributeNS(null, "transform", `rotate(${-degree})`);
-  group.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
+  group.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
 
   array.forEach(item => {
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");

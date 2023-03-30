@@ -1,7 +1,7 @@
 import uniqid from 'uniqid';
 
-export default function drawShapesArray(svg, arrayShapes, result) {
-  const style = getComputedStyle(svg.current);
+export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
+  const style = getComputedStyle(sourceGroup.current);
 
   const {
     arrayCentersCoordsX,
@@ -16,26 +16,23 @@ export default function drawShapesArray(svg, arrayShapes, result) {
     const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
     const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
 
-    shape(svg, relativeCenterX, relativeCenterY);
+    shape(sourceGroup, relativeCenterX, relativeCenterY);
 
-    const arr = createAxisArray(style, relativeCenterX, relativeCenterY, id).commonAxes;
+    const commonAxes = [
+      {x: relativeCenterX},
+      {y: relativeCenterY}
+    ]
+
+    const arr = createAxisArray({style, commonAxes, id});
+    console.log(arr)
 
     arr.forEach(axis => {
-      if (axis.axisName == "Yсл" || axis.axisName == "Xсл") {
-        if (result && result.auxiliaryAxes.x == arrayCentersCoordsX[id]) {
-          Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
-          
-        } else if (result && result.auxiliaryAxes.y == arrayCentersCoordsY[id]) {
-          Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
-        }
-      } else {
-        Object.values(drawAxis(axis)).forEach(elem => svg.current.appendChild(elem));
-      }
+      Object.values(drawAxis(axis)).forEach(elem => sourceGroup.current.appendChild(elem));
     })
   })
 
   if (result) {
-    drawMainAxis(leftXLimit, bottomYLimit, result, svg)
+    drawMainAxis(leftXLimit, bottomYLimit, result, sourceGroup, group)
   }
 }
 
@@ -77,56 +74,51 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   return { line, text, defs }
 }
 
-function createAxisArray(style, relativeCenterX, relativeCenterY, id) {
-  return {
-    commonAxes: [
-      {
-        x1: relativeCenterX,
-        x2: relativeCenterX,
-        y1: parseFloat(style.height)*0.2,
-        y2: parseFloat(style.height)*0.8,
-        axisName: `Y${id+1}`
-      },
-      {
-        x1: parseFloat(style.width)*0.2,
-        x2: parseFloat(style.width)*0.8,
-        y1: relativeCenterY,
-        y2: relativeCenterY,
-        axisName: `X${id+1}`
-      },
-      {
-        x1: relativeCenterX,
-        x2: relativeCenterX,
-        y1: parseFloat(style.height)*0.15,
-        y2: parseFloat(style.height)*0.85,
-        axisName: `Yсл`
-      },
-      {
-        x1: parseFloat(style.width)*0.15,
-        x2: parseFloat(style.width)*0.85,
-        y1: relativeCenterY,
-        y2: relativeCenterY,
-        axisName: `Xсл`
-      },
-    ],
-    mainAxes: [
-      {
-        x1: relativeCenterX,
-        x2: relativeCenterX,
-        y1: parseFloat(style.height)*0.1,
-        y2: parseFloat(style.height)*0.9,
-        axisName: `Yc`,
-        orientation: "vertical",
-      },
-      {
-        x1: parseFloat(style.width)*0.1,
-        x2: parseFloat(style.width)*0.9,
-        y1: relativeCenterY,
-        y2: relativeCenterY,
-        axisName: `Xc`,
-        orientation: "horisontal",
-      },
-    ]
+class Axis {
+  constructor(style, obj, id) {
+    this.x1 = obj.x || parseFloat(style.width)*0.15;
+    this.x2 = obj.x || parseFloat(style.width)*0.85;
+    this.y1 = obj.y || parseFloat(style.height)*0.2;
+    this.y2 = obj.y || parseFloat(style.height)*0.8;
+    this.axisName = (id == undefined) ? null : (this.x1 == this.x2) ? `Y${id+1}` : `X${id+1}`
+  }
+
+  changeLength(ratio) {
+    if (this.x1 == this.x2) {
+      this.y1 /= ratio;
+      this.y2 *= ratio;
+    } else {
+      this.x1 /= ratio;
+      this.x2 *= ratio;
+    }
+  }
+}
+
+function createAxisArray({style, commonAxes, mainAxes, id, result}) {
+  if (commonAxes) {
+    return commonAxes.map(obj => new Axis(style, obj, id))
+  } else {
+    const axesName = ['Yсл', 'Xсл','Yc', 'Xc', 'V', 'U'];
+    const axes = mainAxes.map(obj => new Axis(style, obj, id));
+
+    return axes.reduce((prev, curr, id) => {
+      curr.changeLength(1.1);
+
+      if (id < axes.length - 1) {
+        return [...prev, Object.assign(curr, {axisName: axesName[id]})]
+      } else {
+        const [maxAxis, minAxis] = (result.moments.Ix.value > result.moments.Iy.value) 
+          ? [curr, prev.find(elem => elem.axisName == "Yc")]
+          : [prev.find(elem => elem.axisName == "Yc"), curr]
+
+        return [
+          ...prev,
+          Object.assign(curr, {axisName: axesName[id]}),
+          Object.assign({...maxAxis}, {axisName: axesName[id+1]}),
+          Object.assign({...minAxis}, {axisName: axesName[id+2]}),
+        ]
+      }
+    }, [])
   }
 }
 
@@ -146,56 +138,33 @@ function auxiliaryCalc(arrayShapes, style) {
   return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
 }
 
-function drawMainAxis(leftXLimit, bottomYLimit, result, svg) {
+function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
   const style = getComputedStyle(svg.current);
   const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
   const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
 
-  const arr = createAxisArray(style, relativeCenterX, relativeCenterY).mainAxes;
-  arr.forEach(axis => drawAxis(svg, axis));
-  arr.forEach(axis => {
+  const mainAxes = [
+    {x: leftXLimit},
+    {y: bottomYLimit},
+    {x: relativeCenterX},
+    {y: relativeCenterY}
+  ]
 
-    if (result.degree.value <= 45 && result.degree.value >= -45) {
-      if (axis.orientation == "vertical") {
-        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V';
-      } else {
-        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U';
-      }
+  let arr = createAxisArray({style, mainAxes, result});
+  arr.map(axis => {
+    const nodeElements = drawAxis(axis);
+
+    if (axis.axisName == "V" || axis.axisName == "U") {
+      Object.values(nodeElements).forEach(elem => {
+        group.current.appendChild(elem);
+        const { text } = nodeElements;
+        text.setAttributeNS(null, "transform", `scale(1, -1) rotate(${-result.degree.value})`);
+      });
     } else {
-      if (axis.orientation == "vertical") {
-        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'V' : 'U';
-      } else {
-        axis.axisName = result.moments.Ix.value > result.moments.Iy.value ? 'U' : 'V';
-      }
+      Object.values(nodeElements).forEach(elem => svg.current.appendChild(elem));
     }
-
-    rotate(relativeCenterX, relativeCenterY, drawAxis(svg, axis), result.degree.value);
   })
 }
 
-function rotate(x, y, { line, text }, degree) {
-  line.setAttributeNS(null, "transform-origin", `${x} ${y}`);
-  line.setAttributeNS(null, 'transform', `rotate(${degree})`);
-
-  const currentX = text.x.animVal[0].value;
-  const currentY = text.y.animVal[0].value;
-  let rotateX;
-  let rotateY;
-
-  if (currentY > y) {
-    const rotateDegree = 90 + degree;
-    rotateX = x + (currentY-y)*Math.cos(rotateDegree*Math.PI/180);
-    rotateY = y + (currentY-y)*Math.sin(rotateDegree*Math.PI/180);
-  } else {
-    const rotateDegree = (degree > 0) ? degree : 360 + degree;
-    rotateX = x + (currentX-x)*Math.cos(rotateDegree*Math.PI/180);
-    rotateY = y + (currentX-x)*Math.sin(rotateDegree*Math.PI/180) - 10;
-  }
-
-  text.setAttributeNS(null, "transform-origin", `${rotateX} ${rotateY}`);
-
-  text.setAttributeNS(null, 'x', `${rotateX}`);
-  text.setAttributeNS(null, 'y', `${rotateY-20}`);
-}
-
-export { createAxisArray, drawAxis, rotate };
+export { createAxisArray, drawAxis }; 
+//была 201 строчка

@@ -96,7 +96,7 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
           setCorner(corner);
         }}>
           <option>Выберите № равнополочного уголка</option>
-          {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
+          {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}: {elem.b}x{elem.b}x{elem.t}</option>)}
         </select>
           
         <RadioFields

@@ -17,7 +17,8 @@ function InputingData({className, children, setResult, result}) {
   const [arrayShapes, setArrayShapes] = useState([]);
   const [isPointsModeActive, setPointsMode] = useState(false);
   const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0)
+  const [height, setHeight] = useState(0);
+  const [viewBox, setViewBox] = useState(`0 0 800 600`)
 
   const saveShape = (func) => {
     return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
@@ -36,7 +37,8 @@ function InputingData({className, children, setResult, result}) {
   function draw() {
     sourceGroup.current.replaceChildren();
 
-    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result)
+    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, svg);
+    setViewBoxSize()
   }
 
   useEffect(() => {
@@ -60,12 +62,19 @@ function InputingData({className, children, setResult, result}) {
 
   createCirclesInSvg.svg = sourceGroup.current;
 
+  function setViewBoxSize() {
+    let style = resultGroup.current ? resultGroup.current.getBBox() : sourceGroup.current.getBBox();
+    setViewBox(`${style.x-25} ${style.y-25} ${Math.round(style.width)+50} ${Math.round(style.height)+50}`);
+  }
+
   return (
     <div className={className}>
-      <SVG ref={svg}>
+      <SVG ref={svg} viewBox={viewBox} vector-effect="non-scaling-stroke">
         <g ref={sourceGroup}></g>
-        {!width ? null : <g ref={resultGroup} style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`, transformOrigin: `${width/2}px ${height/2}px`}}>
-          </g>}
+        {!result 
+          ? null 
+          : <g ref={resultGroup} style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`, transformOrigin: `${width/2}px ${height/2}px`}} />
+        }
       </SVG>
       <form onSubmit={submit}>
         <ul style={{position: "relative"}}>

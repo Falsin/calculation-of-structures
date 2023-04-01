@@ -89,6 +89,7 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   function createAxis() {
     if (section) {
       const style = getComputedStyle(svg.current);
+      const sourceGroup = g.current;
 
       const dist = z0*10 || x0*10 || b/2;
       let centerX = width/2 + (activeCase == 2 ? b/2 - dist : - b/2 + dist);
@@ -100,9 +101,10 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
         {y: centerY},
       ]
 
-      const arr = createAxisArray({style, commonAxes, id: 0})
-      //const arr = createAxisArray({style, commonAxisArr, id: 0})
-      
+      const styleObj = sourceGroup.getBBox();
+      console.log(styleObj)
+
+      const arr = createAxisArray({style, commonAxes, id: 0, styleObj})
       setAxisArr(createNodeArr(arr))
     }
   }

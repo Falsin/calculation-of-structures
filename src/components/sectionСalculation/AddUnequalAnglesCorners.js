@@ -97,7 +97,7 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
           setCorner(corner);
         }}>
           <option>Выберите № неравнополочного уголка</option>
-          {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}</option>)}
+          {corners.map(elem => <option value={elem._id} key={elem._id}>{elem.no}: {elem.B}x{elem.b}x{elem.t}</option>)}
         </select>
           
         <RadioFields

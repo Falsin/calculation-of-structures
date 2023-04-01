@@ -1,6 +1,6 @@
 import uniqid from 'uniqid';
 
-export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
+export default function drawShapesArray(sourceGroup, group, arrayShapes, result, svg) {
   const style = getComputedStyle(sourceGroup.current);
 
   const {
@@ -9,8 +9,10 @@ export default function drawShapesArray(sourceGroup, group, arrayShapes, result)
     xLimits,
     yLimits,
     leftXLimit,
-    bottomYLimit
+    bottomYLimit,
   } = auxiliaryCalc(arrayShapes, style);
+
+  const commonAxesArr = [];
 
   arrayShapes.forEach((shape, id) => {
     const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
@@ -18,22 +20,27 @@ export default function drawShapesArray(sourceGroup, group, arrayShapes, result)
 
     shape(sourceGroup, relativeCenterX, relativeCenterY);
 
-    const commonAxes = [
-      {x: relativeCenterX},
-      {y: relativeCenterY}
-    ]
-
-    const arr = createAxisArray({style, commonAxes, id});
-    console.log(arr)
-
-    arr.forEach(axis => {
-      Object.values(drawAxis(axis)).forEach(elem => sourceGroup.current.appendChild(elem));
-    })
+    commonAxesArr.push([{x: relativeCenterX}, {y: relativeCenterY}]);
   })
+
+  drawAxisCollection(sourceGroup, commonAxesArr);
 
   if (result) {
     drawMainAxis(leftXLimit, bottomYLimit, result, sourceGroup, group)
   }
+}
+
+function drawAxisCollection(sourceGroup, commonAxesArr) {
+  const styleObj = sourceGroup.current.getBBox();
+
+  commonAxesArr.forEach((commonAxes, id) => {
+    const arr = createAxisArray({commonAxes, id, styleObj});
+
+    arr.forEach(axis => {
+      axis.changeLength(100)
+      Object.values(drawAxis(axis)).forEach(elem => sourceGroup.current.appendChild(elem));
+    })
+  })
 }
 
 function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
@@ -47,7 +54,7 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   marker.setAttributeNS(null, "markerWidth", "8");
   marker.setAttributeNS(null, "markerHeight", "10");
   marker.setAttributeNS(null, "refX", "4");
-  marker.setAttributeNS(null, "refY", "0");
+  marker.setAttributeNS(null, "refY", "10");
   marker.setAttributeNS(null, "stroke", color);
   marker.setAttributeNS(null, "orient", `${x1 == x2 ? '0' : '-90'}`);
 
@@ -75,34 +82,34 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
 }
 
 class Axis {
-  constructor(style, obj, id) {
-    this.x1 = obj.x || parseFloat(style.width)*0.15;
-    this.x2 = obj.x || parseFloat(style.width)*0.85;
-    this.y1 = obj.y || parseFloat(style.height)*0.2;
-    this.y2 = obj.y || parseFloat(style.height)*0.8;
+  constructor(obj, id, styleObj) {
+    this.x1 = obj.x || styleObj.x;
+    this.x2 = obj.x || styleObj.x+styleObj.width;
+    this.y1 = obj.y || styleObj.y;
+    this.y2 = obj.y || styleObj.y+styleObj.height;
     this.axisName = (id == undefined) ? null : (this.x1 == this.x2) ? `Y${id+1}` : `X${id+1}`
   }
 
-  changeLength(ratio) {
+  changeLength(val) {
     if (this.x1 == this.x2) {
-      this.y1 /= ratio;
-      this.y2 *= ratio;
+      this.y1 -= val;
+      this.y2 += val;
     } else {
-      this.x1 /= ratio;
-      this.x2 *= ratio;
+      this.x1 -= val;
+      this.x2 += val;
     }
   }
 }
 
-function createAxisArray({style, commonAxes, mainAxes, id, result}) {
+function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
   if (commonAxes) {
-    return commonAxes.map(obj => new Axis(style, obj, id))
+    return commonAxes.map(obj => new Axis(obj, id, styleObj))
   } else {
     const axesName = ['Yсл', 'Xсл','Yc', 'Xc', 'V', 'U'];
-    const axes = mainAxes.map(obj => new Axis(style, obj, id));
+    const axes = mainAxes.map(obj => new Axis(obj, id));
 
     return axes.reduce((prev, curr, id) => {
-      curr.changeLength(1.1);
+      curr.changeLength(40);
 
       if (id < axes.length - 1) {
         return [...prev, Object.assign(curr, {axisName: axesName[id]})]
@@ -127,7 +134,6 @@ function auxiliaryCalc(arrayShapes, style) {
   const centerYWindow = parseFloat(style.height) / 2;
 
   const arrayCentersCoordsX = arrayShapes.map(shapeFunc => shapeFunc().centerX);
-
   const arrayCentersCoordsY = arrayShapes.map(shapeFunc => shapeFunc().centerY);
 
   const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
@@ -135,7 +141,20 @@ function auxiliaryCalc(arrayShapes, style) {
   const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
   const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
 
-  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
+  const scaleRatio = calcScale(style, arrayShapes);
+
+  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit, scaleRatio }
+}
+
+function calcScale(style, arrayShapes) {
+  const squareSvg = parseFloat(style.width) * parseFloat(style.height) * 0.026;
+  const commonShapeSquare = arrayShapes.reduce((prev, curr) => {
+    return prev + +curr().square
+  }, 0);
+
+  if (squareSvg / 400 > commonShapeSquare) {
+    return squareSvg / 400 / commonShapeSquare;
+  }
 }
 
 function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
@@ -166,5 +185,4 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
   })
 }
 
-export { createAxisArray, drawAxis }; 
-//была 201 строчка
+export { createAxisArray, drawAxis };

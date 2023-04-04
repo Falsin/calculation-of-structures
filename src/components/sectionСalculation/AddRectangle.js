@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import createTextCoords from "../../javascript/addCoordText";
+import { createTextCoords } from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
+import setSectionData from "../../javascript/setSectionData";
+
 
 export default function AddRectangle({ saveShape }) {
   const [h, setH] = useState(100);
@@ -11,23 +13,24 @@ export default function AddRectangle({ saveShape }) {
   const [centerY, setCenterY] = useState(0);
 
   function drawRectangle() {
-    const rectangleInstance = {
+    const rectangle = {
       h: parseFloat(h),
       b: parseFloat(b),
       centerX,
       centerY,
       type: "rectangle",
-      degree: 0,
       uniqid: uniqid()
     }
 
+    const { sectionInstance, coords } = setSectionData.call(rectangle, rectangle.centerX, rectangle.centerY, 0)
+
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
-        return rectangleInstance;
+        return sectionInstance;
       }
 
       const xmlns = "http://www.w3.org/2000/svg";
-      const {h, b, degree} = rectangleInstance
+      const {h, b} = sectionInstance
 
       const path = document.createElementNS(xmlns, "path");
       path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${h} h ${-b} z`);
@@ -35,18 +38,12 @@ export default function AddRectangle({ saveShape }) {
       path.setAttributeNS(null, "stroke", "black");
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1)`);
-      path.setAttributeNS(null, "id", `${rectangleInstance.uniqid}`);
+      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
+      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
       svg.current.appendChild(path);
 
-      const coords = [
-        {x: -b/2, y: h/2},
-        {x: b/2, y: h/2},
-        {x: -b/2, y: -h/2},
-        {x: b/2, y: -h/2}
-      ]
-
-      createTextCoords(arguments, coords, degree);
+      createTextCoords(arguments, coords, sectionInstance);
     }
   }
 

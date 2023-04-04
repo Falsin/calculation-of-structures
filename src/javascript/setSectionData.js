@@ -35,7 +35,7 @@ export default function setSectionData(centerX, centerY, degree, idCoordInArray,
       {x: b - z0*10, y: -z0*10},
       {x: -z0*10, y: -z0*10}
     ]
-  } else {
+  } else if (this.type == "unequalAnglesCorners") {
     if (activeCase == 1) {
       coords = [
         {x: -x0*10, y: B - y0*10},
@@ -49,14 +49,21 @@ export default function setSectionData(centerX, centerY, degree, idCoordInArray,
         {x: -b + x0*10, y: -y0*10},
       ]
     }
+  } else {
+    coords = [
+      {x: -b/2, y: h/2},
+      {x: b/2, y: h/2},
+      {x: b/2, y: -h/2},
+      {x: -b/2, y: -h/2}
+    ]
   }
 
-  const { rotateX = 0, rotateY = 0 } = (idCoordInArray !== null) 
-                                        ? calcRotateCoords(coords[idCoordInArray], 0, 0, degree) 
-                                        : {}
+  const { rotateX = 0, rotateY = 0 } = (idCoordInArray !== null && idCoordInArray !== undefined)
+    ? calcRotateCoords(coords[idCoordInArray], 0, 0, degree) 
+    : {}
 
   sectionInstance.centerX = centerX - rotateX;
-  sectionInstance.centerY = centerY - rotateY;                                 
+  sectionInstance.centerY = centerY - rotateY;          
 
   return { sectionInstance, coords }
 }

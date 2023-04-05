@@ -1,6 +1,7 @@
 import uniqid from 'uniqid';
+import { createTextCoords } from './addCoordText';
 
-export default function drawShapesArray(sourceGroup, group, arrayShapes, result, svg) {
+export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
   const style = getComputedStyle(sourceGroup.current);
 
   const {
@@ -13,20 +14,37 @@ export default function drawShapesArray(sourceGroup, group, arrayShapes, result,
   } = auxiliaryCalc(arrayShapes, style);
 
   const commonAxesArr = [];
+  const textSetArr = [];
 
   arrayShapes.forEach((shape, id) => {
     const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
     const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
 
-    shape(sourceGroup, relativeCenterX, relativeCenterY);
-
+    const { sectionInstance, coords, path } = shape(sourceGroup, relativeCenterX, relativeCenterY);
+    
+    textSetArr.push({
+      sectionInstance, 
+      coords,
+      relativeCenterX,
+      relativeCenterY,
+      path
+    })
     commonAxesArr.push([{x: relativeCenterX}, {y: relativeCenterY}]);
   })
 
-  drawAxisCollection(sourceGroup, commonAxesArr);
+  const obj = sourceGroup.current.getBBox();
+
+  const square = obj.width * obj.height;
+
+  textSetArr.forEach((obj) => {
+    createTextCoords([sourceGroup, obj.relativeCenterX, obj.relativeCenterY], obj.coords, obj.sectionInstance)
+  })
+
+
+  //drawAxisCollection(sourceGroup, commonAxesArr);
 
   if (result) {
-    drawMainAxis(leftXLimit, bottomYLimit, result, sourceGroup, group)
+    drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup)
   }
 }
 
@@ -37,7 +55,7 @@ function drawAxisCollection(sourceGroup, commonAxesArr) {
     const arr = createAxisArray({commonAxes, id, styleObj});
 
     arr.forEach(axis => {
-      axis.changeLength(100)
+      axis.changeLength(50)
       Object.values(drawAxis(axis)).forEach(elem => sourceGroup.current.appendChild(elem));
     })
   })
@@ -81,6 +99,34 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   return { line, text, defs }
 }
 
+function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
+  if (commonAxes) {
+    return commonAxes.map(obj => new Axis(obj, id, styleObj))
+  } else {
+    const axesName = ['Yсл', 'Xсл','Yc', 'Xc', 'V', 'U'];
+    const axes = mainAxes.map(obj => new Axis(obj, id, styleObj));
+
+    return axes.reduce((prev, curr, id) => {
+      curr.changeLength(40);
+
+      if (id < axes.length - 1) {
+        return [...prev, Object.assign(curr, {axisName: axesName[id]})]
+      } else {
+        const [maxAxis, minAxis] = (result.moments.Ix.value > result.moments.Iy.value) 
+          ? [curr, prev.find(elem => elem.axisName == "Yc")]
+          : [prev.find(elem => elem.axisName == "Yc"), curr]
+
+        return [
+          ...prev, 
+          {...curr, axisName: axesName[id]},
+          {...maxAxis, axisName: axesName[id+1]},
+          {...minAxis, axisName: axesName[id+2]}
+        ]
+      }
+    }, [])
+  }
+}
+
 class Axis {
   constructor(obj, id, styleObj) {
     this.x1 = obj.x || styleObj.x;
@@ -101,34 +147,6 @@ class Axis {
   }
 }
 
-function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
-  if (commonAxes) {
-    return commonAxes.map(obj => new Axis(obj, id, styleObj))
-  } else {
-    const axesName = ['Yсл', 'Xсл','Yc', 'Xc', 'V', 'U'];
-    const axes = mainAxes.map(obj => new Axis(obj, id));
-
-    return axes.reduce((prev, curr, id) => {
-      curr.changeLength(40);
-
-      if (id < axes.length - 1) {
-        return [...prev, Object.assign(curr, {axisName: axesName[id]})]
-      } else {
-        const [maxAxis, minAxis] = (result.moments.Ix.value > result.moments.Iy.value) 
-          ? [curr, prev.find(elem => elem.axisName == "Yc")]
-          : [prev.find(elem => elem.axisName == "Yc"), curr]
-
-        return [
-          ...prev,
-          Object.assign(curr, {axisName: axesName[id]}),
-          Object.assign({...maxAxis}, {axisName: axesName[id+1]}),
-          Object.assign({...minAxis}, {axisName: axesName[id+2]}),
-        ]
-      }
-    }, [])
-  }
-}
-
 function auxiliaryCalc(arrayShapes, style) {
   const centerXWindow = parseFloat(style.width) / 2;
   const centerYWindow = parseFloat(style.height) / 2;
@@ -141,24 +159,11 @@ function auxiliaryCalc(arrayShapes, style) {
   const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
   const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
 
-  const scaleRatio = calcScale(style, arrayShapes);
-
-  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit, scaleRatio }
+  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
 }
 
-function calcScale(style, arrayShapes) {
-  const squareSvg = parseFloat(style.width) * parseFloat(style.height) * 0.026;
-  const commonShapeSquare = arrayShapes.reduce((prev, curr) => {
-    return prev + +curr().square
-  }, 0);
-
-  if (squareSvg / 400 > commonShapeSquare) {
-    return squareSvg / 400 / commonShapeSquare;
-  }
-}
-
-function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
-  const style = getComputedStyle(svg.current);
+function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup) {
+  const styleObj = sourceGroup.current.getBBox();
   const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
   const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
 
@@ -169,7 +174,8 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
     {y: relativeCenterY}
   ]
 
-  let arr = createAxisArray({style, mainAxes, result});
+  let arr = createAxisArray({styleObj, mainAxes, result});
+
   arr.map(axis => {
     const nodeElements = drawAxis(axis);
 
@@ -180,7 +186,7 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, svg, group) {
         text.setAttributeNS(null, "transform", `scale(1, -1) rotate(${-result.degree.value})`);
       });
     } else {
-      Object.values(nodeElements).forEach(elem => svg.current.appendChild(elem));
+      Object.values(nodeElements).forEach(elem => sourceGroup.current.appendChild(elem));
     }
   })
 }

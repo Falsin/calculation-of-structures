@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
-import createTextCoords from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
@@ -72,6 +71,7 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1} -1) rotate(${activeCase == 2 ? -sectionInstance.degree : sectionInstance.degree})`);
       path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
+      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
       if (sectionInstance.isActive) {
         path.classList.add("active");
@@ -79,7 +79,7 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
 
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance);
+      return { sectionInstance, coords };
     }
   }
 

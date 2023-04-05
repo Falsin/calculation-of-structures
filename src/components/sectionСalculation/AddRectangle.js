@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { createTextCoords } from "../../javascript/addCoordText";
 import changeStatus from "../../javascript/changeStatusInList";
 import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
@@ -43,7 +42,7 @@ export default function AddRectangle({ saveShape }) {
 
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance);
+      return { sectionInstance, coords };
     }
   }
 

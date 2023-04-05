@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import createTextCoords from "../../javascript/addCoordText";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
@@ -69,6 +68,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
       path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${sectionInstance.degree})`);
       path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
+      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
       if (sectionInstance.isActive) {
         path.classList.add("active");
@@ -76,7 +76,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       
       svg.current.appendChild(path);
 
-      createTextCoords(arguments, coords, sectionInstance);
+      return { sectionInstance, coords };
     }
   }
 

@@ -1,5 +1,6 @@
 import uniqid from 'uniqid';
 import { createTextCoords } from './addCoordText';
+import calcScale from './calcScale';
 
 export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
   const style = getComputedStyle(sourceGroup.current);
@@ -26,42 +27,42 @@ export default function drawShapesArray(sourceGroup, group, arrayShapes, result)
       sectionInstance, 
       coords,
       relativeCenterX,
-      relativeCenterY,
-      path
+      relativeCenterY
     })
     commonAxesArr.push([{x: relativeCenterX}, {y: relativeCenterY}]);
   })
 
-  const obj = sourceGroup.current.getBBox();
+  createAxisAndText(textSetArr, sourceGroup, commonAxesArr, leftXLimit, bottomYLimit, result, group)
+}
 
-  const square = obj.width * obj.height;
-
+function createAxisAndText(textSetArr, sourceGroup, commonAxesArr, leftXLimit, bottomYLimit, result, group) {
+  const scale = calcScale(sourceGroup);
+  
   textSetArr.forEach((obj) => {
-    createTextCoords([sourceGroup, obj.relativeCenterX, obj.relativeCenterY], obj.coords, obj.sectionInstance)
+    createTextCoords([sourceGroup, obj.relativeCenterX, obj.relativeCenterY], obj.coords, obj.sectionInstance, scale)
   })
 
-
-  //drawAxisCollection(sourceGroup, commonAxesArr);
+  drawAxisCollection(sourceGroup, commonAxesArr, scale);
 
   if (result) {
-    drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup)
+    drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup, scale);
   }
 }
 
-function drawAxisCollection(sourceGroup, commonAxesArr) {
+function drawAxisCollection(sourceGroup, commonAxesArr, scale) {
   const styleObj = sourceGroup.current.getBBox();
 
   commonAxesArr.forEach((commonAxes, id) => {
     const arr = createAxisArray({commonAxes, id, styleObj});
 
     arr.forEach(axis => {
-      axis.changeLength(50)
-      Object.values(drawAxis(axis)).forEach(elem => sourceGroup.current.appendChild(elem));
+      axis.changeLength((50/scale)+2)
+      Object.values(drawAxis(axis, "black", scale)).forEach(elem => sourceGroup.current.appendChild(elem));
     })
   })
 }
 
-function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
+function drawAxis({x1, y1, x2, y2, axisName}, color = "black", scale = 1) {
   const xmlns = "http://www.w3.org/2000/svg";
   const id = uniqid();
 
@@ -79,6 +80,7 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   const triangle = document.createElementNS(xmlns, "path");
   triangle.setAttributeNS(null, "d", `M 0.5, 0 l 3.5 10 l 3.5 -10`);
   triangle.setAttributeNS(null, "fill", color);
+  triangle.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
   marker.appendChild(triangle);
   defs.appendChild(marker);
@@ -87,13 +89,16 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black") {
   line.setAttributeNS(null, "d", `M ${x1}, ${y1} L ${x2}, ${y2}`);
   line.setAttributeNS(null, "marker-end", `url(#${id})`);
   line.setAttributeNS(null, "stroke", color);
+  line.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
   const text = document.createElementNS(xmlns, "text");
   text.setAttributeNS(null, "x", `${x2}`);
-  text.setAttributeNS(null, "y", `${y2-10}`);
+  text.setAttributeNS(null, "y", `${y2-(10/scale)-2}`);
   text.setAttributeNS(null, "transform-origin", `${x2} ${y2}`);
   text.setAttributeNS(null, 'transform', `scale(1, -1)`);
   text.setAttributeNS(null, "text-anchor", `middle`);
+  text.setAttributeNS(null, "font-size", `${(16/scale)+2}`);
+
   text.textContent = axisName;
 
   return { line, text, defs }
@@ -107,8 +112,6 @@ function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
     const axes = mainAxes.map(obj => new Axis(obj, id, styleObj));
 
     return axes.reduce((prev, curr, id) => {
-      curr.changeLength(40);
-
       if (id < axes.length - 1) {
         return [...prev, Object.assign(curr, {axisName: axesName[id]})]
       } else {
@@ -116,11 +119,13 @@ function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
           ? [curr, prev.find(elem => elem.axisName == "Yc")]
           : [prev.find(elem => elem.axisName == "Yc"), curr]
 
+        const prototype = Object.getPrototypeOf(curr);
+
         return [
-          ...prev, 
-          {...curr, axisName: axesName[id]},
-          {...maxAxis, axisName: axesName[id+1]},
-          {...minAxis, axisName: axesName[id+2]}
+          ...prev,
+          Object.assign(Object.create(prototype), curr, {axisName: axesName[id]}),
+          Object.assign(Object.create(prototype), maxAxis, {axisName: axesName[id+1]}),
+          Object.assign(Object.create(prototype), minAxis, {axisName: axesName[id+2]}),
         ]
       }
     }, [])
@@ -162,7 +167,7 @@ function auxiliaryCalc(arrayShapes, style) {
   return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
 }
 
-function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup) {
+function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup, scale) {
   const styleObj = sourceGroup.current.getBBox();
   const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
   const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
@@ -177,7 +182,8 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup) {
   let arr = createAxisArray({styleObj, mainAxes, result});
 
   arr.map(axis => {
-    const nodeElements = drawAxis(axis);
+    axis.changeLength(60/scale+2);
+    const nodeElements = drawAxis(axis, "black", scale);
 
     if (axis.axisName == "V" || axis.axisName == "U") {
       Object.values(nodeElements).forEach(elem => {

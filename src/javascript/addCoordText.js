@@ -1,14 +1,7 @@
-function createTextCoords(arrayProps, array, section) {
+/* import calcScale from "./calcScale"; */
+
+function createTextCoords(arrayProps, array, section, scale) {
   const [svg, relativeCenterX, relativeCenterY] = arrayProps;
-
-  const viewBox = svg.current.getBBox();
-  const style = getComputedStyle(svg.current);
-
-  const dx = parseFloat(style.width) - viewBox.width;
-  const dy = parseFloat(style.height) - viewBox.height;
-  const scale = dx < dy 
-    ? parseFloat(style.width)/viewBox.width 
-    : parseFloat(style.height)/viewBox.height
 
   const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
   group.setAttributeNS(null, "transform", `rotate(${-section.degree})`);

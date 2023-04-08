@@ -34,16 +34,21 @@ function InputingData({className, children, setResult, result}) {
     setHeight(parseFloat(style.height));
   }, [svg])
 
-  function draw() {
-    sourceGroup.current.replaceChildren();
-
-    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, svg);
-    setViewBoxSize()
-  }
+  useEffect(() => {
+    sourceGroup.current.setAttributeNS(null, "visibility", "visible");
+  }, [viewBox])
 
   useEffect(() => {
     setPointsMode(arrayShapes.length ? true : false);
   }, [arrayShapes.length])
+
+  function draw() {
+    sourceGroup.current.replaceChildren();
+    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
+
+    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, svg);
+    setViewBoxSize();
+  }
   
   async function submit(e) {
     e.preventDefault();
@@ -69,8 +74,8 @@ function InputingData({className, children, setResult, result}) {
 
   return (
     <div className={className}>
-      <SVG ref={svg} viewBox={viewBox} vector-effect="non-scaling-stroke">
-        <g ref={sourceGroup}></g>
+      <SVG ref={svg} viewBox={viewBox}>
+        <g ref={sourceGroup}/>
         {!result 
           ? null 
           : <g ref={resultGroup} style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`, transformOrigin: `${width/2}px ${height/2}px`}} />

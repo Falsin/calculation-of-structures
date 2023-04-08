@@ -1,70 +1,91 @@
 import uniqid from 'uniqid';
 import { createTextCoords } from './addCoordText';
 import calcScale from './calcScale';
+import Axis from './Axis';
 
 export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
   const style = getComputedStyle(sourceGroup.current);
 
-  const {
-    arrayCentersCoordsX,
-    arrayCentersCoordsY,
-    xLimits,
-    yLimits,
-    leftXLimit,
-    bottomYLimit,
-  } = auxiliaryCalc(arrayShapes, style);
+  const auxiliaryProps = auxiliaryCalc(arrayShapes, style);
 
-  const commonAxesArr = [];
-  const textSetArr = [];
+  const dataShapes = createDataShapes(auxiliaryProps, arguments);
 
-  arrayShapes.forEach((shape, id) => {
+  createAxisAndCoords(dataShapes, auxiliaryProps, arguments);
+}
+
+function auxiliaryCalc(arrayShapes, style) {
+  const centerXWindow = parseFloat(style.width) / 2;
+  const centerYWindow = parseFloat(style.height) / 2;
+
+  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => shapeFunc().centerX);
+  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => shapeFunc().centerY);
+
+  const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
+  const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
+  const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
+  const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
+
+  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
+}
+
+function createDataShapes(auxiliaryProps, argFunc) {
+  const { 
+    leftXLimit, 
+    arrayCentersCoordsX, 
+    xLimits, 
+    bottomYLimit, 
+    arrayCentersCoordsY, 
+    yLimits 
+  } = auxiliaryProps;
+
+  const [ sourceGroup, , arrayShapes ] = argFunc;
+
+  return arrayShapes.map((shape, id) => {
     const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
     const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
 
-    const { sectionInstance, coords, path } = shape(sourceGroup, relativeCenterX, relativeCenterY);
-    
-    textSetArr.push({
-      sectionInstance, 
-      coords,
-      relativeCenterX,
-      relativeCenterY
-    })
-    commonAxesArr.push([{x: relativeCenterX}, {y: relativeCenterY}]);
+    const { sectionInstance, coords } = shape(sourceGroup, relativeCenterX, relativeCenterY);
+    return { sectionInstance, coords, x: relativeCenterX, y: relativeCenterY }
   })
-
-  createAxisAndText(textSetArr, sourceGroup, commonAxesArr, leftXLimit, bottomYLimit, result, group)
 }
 
-function createAxisAndText(textSetArr, sourceGroup, commonAxesArr, leftXLimit, bottomYLimit, result, group) {
+function createAxisAndCoords(dataShapes, auxiliaryProps, argFunc) {
+  const [ sourceGroup, , , result ] = argFunc
   const scale = calcScale(sourceGroup);
-  
-  textSetArr.forEach((obj) => {
-    createTextCoords([sourceGroup, obj.relativeCenterX, obj.relativeCenterY], obj.coords, obj.sectionInstance, scale)
-  })
 
-  drawAxisCollection(sourceGroup, commonAxesArr, scale);
+  dataShapes.forEach((obj) => createTextCoords(obj, argFunc, scale));
+
+  drawCommonAxis(dataShapes, sourceGroup, scale)
 
   if (result) {
-    drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup, scale);
+    drawMainAxis(argFunc, auxiliaryProps, scale);
   }
 }
 
-function drawAxisCollection(sourceGroup, commonAxesArr, scale) {
+function drawCommonAxis(dataShapes, sourceGroup, scale) {
   const styleObj = sourceGroup.current.getBBox();
 
-  commonAxesArr.forEach((commonAxes, id) => {
+  dataShapes.forEach((obj, id) => {
+    const commonAxes = [
+      {x: obj.x},
+      {y: obj.y} 
+    ];
+
     const arr = createAxisArray({commonAxes, id, styleObj});
 
     arr.forEach(axis => {
       axis.changeLength((50/scale)+2)
-      Object.values(drawAxis(axis, "black", scale)).forEach(elem => sourceGroup.current.appendChild(elem));
+
+      Object.values(drawAxis({...axis, scale}))
+        .forEach(elem => sourceGroup.current.appendChild(elem));
     })
   })
 }
 
-function drawAxis({x1, y1, x2, y2, axisName}, color = "black", scale = 1) {
+function drawAxis({x1, y1, x2, y2, axisName, color, scale}) {
   const xmlns = "http://www.w3.org/2000/svg";
   const id = uniqid();
+  const scaleVal = scale ? scale : 1;
 
   const defs = document.createElementNS(xmlns, "defs");
 
@@ -74,12 +95,12 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black", scale = 1) {
   marker.setAttributeNS(null, "markerHeight", "10");
   marker.setAttributeNS(null, "refX", "4");
   marker.setAttributeNS(null, "refY", "10");
-  marker.setAttributeNS(null, "stroke", color);
+  marker.setAttributeNS(null, "stroke", color ? color : "black");
   marker.setAttributeNS(null, "orient", `${x1 == x2 ? '0' : '-90'}`);
 
   const triangle = document.createElementNS(xmlns, "path");
   triangle.setAttributeNS(null, "d", `M 0.5, 0 l 3.5 10 l 3.5 -10`);
-  triangle.setAttributeNS(null, "fill", color);
+  triangle.setAttributeNS(null, "fill", color ? color : "black");
   triangle.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
   marker.appendChild(triangle);
@@ -88,16 +109,16 @@ function drawAxis({x1, y1, x2, y2, axisName}, color = "black", scale = 1) {
   const line = document.createElementNS(xmlns, "path");
   line.setAttributeNS(null, "d", `M ${x1}, ${y1} L ${x2}, ${y2}`);
   line.setAttributeNS(null, "marker-end", `url(#${id})`);
-  line.setAttributeNS(null, "stroke", color);
+  line.setAttributeNS(null, "stroke", color ? color : "black");
   line.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
 
   const text = document.createElementNS(xmlns, "text");
   text.setAttributeNS(null, "x", `${x2}`);
-  text.setAttributeNS(null, "y", `${y2-(10/scale)-2}`);
+  text.setAttributeNS(null, "y", `${y2-(10/scaleVal)-2}`);
   text.setAttributeNS(null, "transform-origin", `${x2} ${y2}`);
   text.setAttributeNS(null, 'transform', `scale(1, -1)`);
   text.setAttributeNS(null, "text-anchor", `middle`);
-  text.setAttributeNS(null, "font-size", `${(16/scale)+2}`);
+  text.setAttributeNS(null, "font-size", `${(16/scaleVal)+2}`);
 
   text.textContent = axisName;
 
@@ -132,42 +153,10 @@ function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
   }
 }
 
-class Axis {
-  constructor(obj, id, styleObj) {
-    this.x1 = obj.x || styleObj.x;
-    this.x2 = obj.x || styleObj.x+styleObj.width;
-    this.y1 = obj.y || styleObj.y;
-    this.y2 = obj.y || styleObj.y+styleObj.height;
-    this.axisName = (id == undefined) ? null : (this.x1 == this.x2) ? `Y${id+1}` : `X${id+1}`
-  }
-
-  changeLength(val) {
-    if (this.x1 == this.x2) {
-      this.y1 -= val;
-      this.y2 += val;
-    } else {
-      this.x1 -= val;
-      this.x2 += val;
-    }
-  }
-}
-
-function auxiliaryCalc(arrayShapes, style) {
-  const centerXWindow = parseFloat(style.width) / 2;
-  const centerYWindow = parseFloat(style.height) / 2;
-
-  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => shapeFunc().centerX);
-  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => shapeFunc().centerY);
-
-  const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
-  const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
-  const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
-  const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
-
-  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
-}
-
-function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup, scale) {
+function drawMainAxis(argFunc, auxiliaryProps, scale) {
+  const [ sourceGroup, group, , result ] = argFunc
+  const { leftXLimit, bottomYLimit } = auxiliaryProps;
+  
   const styleObj = sourceGroup.current.getBBox();
   const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
   const relativeCenterY = bottomYLimit + result.centerOfGravity.value.Yc;
@@ -183,7 +172,7 @@ function drawMainAxis(leftXLimit, bottomYLimit, result, group, sourceGroup, scal
 
   arr.map(axis => {
     axis.changeLength(60/scale+2);
-    const nodeElements = drawAxis(axis, "black", scale);
+    const nodeElements = drawAxis({...axis, scale});
 
     if (axis.axisName == "V" || axis.axisName == "U") {
       Object.values(nodeElements).forEach(elem => {

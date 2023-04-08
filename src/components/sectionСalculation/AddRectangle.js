@@ -21,28 +21,18 @@ export default function AddRectangle({ saveShape }) {
       uniqid: uniqid()
     }
 
-    const { sectionInstance, coords } = setSectionData.call(rectangle, rectangle.centerX, rectangle.centerY, 0)
+    const sectionInstance = setSectionData.call(rectangle, rectangle.centerX, rectangle.centerY, 0)
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return sectionInstance;
       }
-
-      const xmlns = "http://www.w3.org/2000/svg";
-      const {h, b} = sectionInstance
-
-      const path = document.createElementNS(xmlns, "path");
-      path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${h} h ${-b} z`);
-      path.setAttributeNS(null, "fill", "white");
-      path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
-      path.setAttributeNS(null, "transform", `scale(1 -1)`);
-      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
-      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
+      
+      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
 
       svg.current.appendChild(path);
 
-      return { sectionInstance, coords };
+      return sectionInstance;
     }
   }
 

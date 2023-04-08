@@ -52,33 +52,24 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
   const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
 
   function drawCorner(centerX, centerY) {
-    const { sectionInstance, coords } = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray)
-    const { b, t, z0 } = sectionInstance;
+    const sectionInstance = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray)
 
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return sectionInstance;
       }
 
-      setCoordPoints.call(sectionInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, [...arguments]);
 
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    
-      path.setAttributeNS(null, "d", `M ${relativeCenterX - z0*10}, ${relativeCenterY - b + z0*10} h ${t} v ${b - t} h ${b - t} v ${t} h ${-b} z`);
-      path.setAttributeNS(null, "fill", "white");
-      path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
-      path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${sectionInstance.degree})`);
-      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
-      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
-
+      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
+      
       if (sectionInstance.isActive) {
         path.classList.add("active");
       }
 
       svg.current.appendChild(path);
 
-      return { sectionInstance, coords };
+      return sectionInstance;
     }
   }
 

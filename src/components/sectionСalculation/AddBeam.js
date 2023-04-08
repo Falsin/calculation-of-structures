@@ -48,27 +48,19 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
     }
   }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => saveShape(drawBeam(centerX, centerY))
+  const drawShape = (centerX, centerY) => saveShape(drawBeam(centerX, centerY));
 
   function drawBeam(centerX, centerY) {
-    const { sectionInstance, coords } = setSectionData.call(beam, centerX, centerY, degree, idCoordInArray)
-    const { h, b, s, t } = sectionInstance;
+    const sectionInstance = setSectionData.call(beam, centerX, centerY, degree, idCoordInArray)
     
     return function (svg, relativeCenterX, relativeCenterY) {
       if (svg === undefined) {
         return sectionInstance;
       }
 
-      setCoordPoints.call(sectionInstance, coords, [...arguments])
+      setCoordPoints.call(sectionInstance, [...arguments]);
 
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttributeNS(null, "d", `M ${relativeCenterX - b/2}, ${relativeCenterY - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`)
-      path.setAttributeNS(null, "fill", "white");
-      path.setAttributeNS(null, "stroke", "black");
-      path.setAttributeNS(null, "transform-origin", `${relativeCenterX} ${relativeCenterY}`);
-      path.setAttributeNS(null, "transform", `scale(1 -1) rotate(${sectionInstance.degree})`);
-      path.setAttributeNS(null, "id", `${sectionInstance.uniqid}`);
-      path.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
+      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
 
       if (sectionInstance.isActive) {
         path.classList.add("active");
@@ -76,7 +68,7 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
       
       svg.current.appendChild(path);
 
-      return { sectionInstance, coords };
+      return sectionInstance;
     }
   }
 

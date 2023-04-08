@@ -102,7 +102,6 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
       ]
 
       const styleObj = sourceGroup.getBBox();
-      console.log(styleObj)
 
       const arr = createAxisArray({style, commonAxes, id: 0, styleObj})
       setAxisArr(createNodeArr(arr))
@@ -149,7 +148,7 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   
   function createNodeArr(arr) {
     return arr.reduce((prev, curr, id) => {
-      const { line, defs } = drawAxis(curr, (id == 1) ? "red" : "green");
+      const { line, defs } = drawAxis({...curr, color: (id == 1) ? "red" : "green"});
       line.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
       return [...prev, line, defs]
     }, [])

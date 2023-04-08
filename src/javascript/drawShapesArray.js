@@ -44,8 +44,8 @@ function createDataShapes(auxiliaryProps, argFunc) {
     const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
     const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
 
-    const { sectionInstance, coords } = shape(sourceGroup, relativeCenterX, relativeCenterY);
-    return { sectionInstance, coords, x: relativeCenterX, y: relativeCenterY }
+    const sectionInstance = shape(sourceGroup, relativeCenterX, relativeCenterY);
+    return { sectionInstance, x: relativeCenterX, y: relativeCenterY }
   })
 }
 

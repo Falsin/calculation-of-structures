@@ -3,7 +3,7 @@ import { createTextCoords } from './addCoordText';
 import calcScale from './calcScale';
 import Axis from './Axis';
 
-export default function drawShapesArray(sourceGroup, group, arrayShapes, result) {
+export default function drawShapesArray(sourceGroup, group, arrayShapes, result, showCoords) {
   const style = getComputedStyle(sourceGroup.current);
 
   const auxiliaryProps = auxiliaryCalc(arrayShapes, style);

@@ -1,9 +1,13 @@
 function createTextCoords(obj, argFunc, scale) {
-  const [ svg ] = argFunc;
+  const [ svg, , , , showCoords ] = argFunc;
 
   const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
   group.setAttributeNS(null, "transform", `rotate(${-obj.sectionInstance.degree})`);
   group.setAttributeNS(null, "transform-origin", `${obj.x} ${obj.y}`);
+
+  if (!showCoords) {
+    group.setAttributeNS(null, "visibility", "hidden");
+  }
 
   obj.sectionInstance.coords.forEach(item => {
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");

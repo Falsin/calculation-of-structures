@@ -18,7 +18,8 @@ function InputingData({className, children, setResult, result}) {
   const [isPointsModeActive, setPointsMode] = useState(false);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  const [viewBox, setViewBox] = useState(`0 0 800 600`)
+  const [viewBox, setViewBox] = useState(`0 0 800 600`);
+  const [showCoords, setShowMode] = useState(true);
 
   const saveShape = (func) => {
     return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
@@ -40,16 +41,20 @@ function InputingData({className, children, setResult, result}) {
 
   useEffect(() => {
     setPointsMode(arrayShapes.length ? true : false);
+    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
   }, [arrayShapes.length])
+
+  useEffect(() => {
+    draw()
+  }, [showCoords])
 
   function draw() {
     sourceGroup.current.replaceChildren();
-    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
-
-    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, svg);
+    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, showCoords);
     setViewBoxSize();
   }
-  
+
+
   async function submit(e) {
     e.preventDefault();
 
@@ -105,7 +110,15 @@ function InputingData({className, children, setResult, result}) {
           </li>
         </ul>
 
-        <button>рассчитать</button>
+        {!arrayShapes.length 
+          ? null 
+          : <>
+            <button type="submit">рассчитать</button>
+            <button type="button" onClick={() => setShowMode(!showCoords)}>
+              {showCoords ? "Скрыть координаты" : "Показать координаты"}
+            </button>
+          </>
+        }
       </form>
     </div>
   )

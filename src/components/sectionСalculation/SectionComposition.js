@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function SectionComposition({arrayShapes, setArrayShapes}) {
+export default function SectionComposition({arrayShapes, setArrayShapes, setFuncForSwitchActiveSection}) {
   const [selectedId, setSelectedId] = useState(null);
-  const healine = useRef(null);
+  const headline = useRef(null);
 
   const sectionNames = {
     beam: "Двутавр",
@@ -11,28 +11,13 @@ export default function SectionComposition({arrayShapes, setArrayShapes}) {
     unequalAnglesCorner: "Неравнополочный уголок",
     rectangle: "Прямоугольное сечение"
   }
-
   useEffect(() => {
-    changeActiveSection()
-  }, [selectedId])
+    changeActiveSection();
 
-  useEffect(() => {
-    const config = { attributes: true };
-    const callback = (mutationList) => {
-      console.log("hello")
-      for (const mutation of mutationList) {
-        if (mutation.type == "attributes") {
-          if (mutation.attributeName == "class" && !healine.current.className) {
-            setSelectedId(null)
-          }
-        }
-      }
+    if (selectedId) {
+      setFuncForSwitchActiveSection(() => setSelectedId)
     }
-
-    const observer = new MutationObserver(callback);
-
-    observer.observe(healine.current, config);
-  })
+  }, [selectedId])
 
   function changeActiveSection() {
     const shapes = arrayShapes.map(elem => elem());
@@ -84,7 +69,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes}) {
             onMouseLeave={(e) => setActiveSection(shape.uniqid, e.type)}
             key={shape.uniqid}
           >
-            <h3 ref={healine} className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>
+            <h3 ref={headline} className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>
               {sectionNames[shape.type]}
             </h3>
             <Section arrayShapes={arrayShapes} shape={shape} setArrayShapes={setArrayShapes} />

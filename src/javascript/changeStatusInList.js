@@ -1,6 +1,10 @@
-export default function changeStatus(e) {
+export default function changeStatus(e, func) {
   const parentElem = e.target.offsetParent;
   const activeElem = parentElem.querySelector("li > .active");
+
+  if (func) {
+    func(null)
+  }
 
   switchChildren(parentElem);
   if (activeElem == e.target) {

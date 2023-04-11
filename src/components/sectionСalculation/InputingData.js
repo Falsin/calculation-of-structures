@@ -20,6 +20,7 @@ function InputingData({className, children, setResult, result}) {
   const [height, setHeight] = useState(0);
   const [viewBox, setViewBox] = useState(`0 0 800 600`);
   const [showCoords, setShowMode] = useState(true);
+  const [funcForSwitchActiveSection, setFuncForSwitchActiveSection] = useState(null);
 
   const saveShape = (func) => {
     return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
@@ -89,7 +90,7 @@ function InputingData({className, children, setResult, result}) {
       <form onSubmit={submit}>
         <ul style={{position: "relative"}}>
           <li>
-            <h2 onClick={(e) => changeStatus(e)}>Простые сечения</h2>
+            <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Простые сечения</h2>
             
             <ul style={{position: "relative"}}>
               {<AddBeam saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
@@ -101,11 +102,15 @@ function InputingData({className, children, setResult, result}) {
           </li>
 
           <li>
-            <h2 onClick={(e) => changeStatus(e)}>Состав сечения ({arrayShapes.length})</h2>
+            <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Состав сечения ({arrayShapes.length})</h2>
 
             {!arrayShapes.length 
               ? <p>Вы ещё не добавили ни одного сечения</p>
-              : <SectionComposition arrayShapes={arrayShapes} setArrayShapes={setArrayShapes} />
+              : <SectionComposition 
+                  arrayShapes={arrayShapes} 
+                  setArrayShapes={setArrayShapes}
+                  setFuncForSwitchActiveSection={setFuncForSwitchActiveSection} 
+                />
             }
           </li>
         </ul>

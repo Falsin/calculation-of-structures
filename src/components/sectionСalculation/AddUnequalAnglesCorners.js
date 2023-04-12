@@ -5,9 +5,8 @@ import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
-import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
-import setSectionData from "../../javascript/setSectionData";
+import { UnequalAnglesCorner } from "../../javascript/Section";
 
 export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -36,6 +35,13 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
     }
   })
 
+  useEffect(() => {
+    if (!isBtnPointsActive && idCoordInArray !== null) {
+      setIdCoordInArray(null)
+      createCirclesInSvg([]);
+    }
+  }, [isBtnPointsActive])
+
   async function drawShapeUsingPoints() {
     const shapeArr = saveShape();
 
@@ -44,36 +50,15 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
     setIdCoordInArray(null);
   }
 
-  useEffect(() => {
-    if (!isBtnPointsActive && idCoordInArray !== null) {
-      setIdCoordInArray(null)
-      createCirclesInSvg([]);
+  const drawShape = (centerX, centerY) => {
+    const section = new UnequalAnglesCorner(centerX, centerY, degree, corner, activeCase);
+
+    if (Number.isInteger(idCoordInArray)) {
+      section.calcSectionCenter(idCoordInArray);
     }
-  }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
-
-  function drawCorner(centerX, centerY) {
-    const sectionInstance = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray, activeCase)
-
-    return function (svg, relativeCenterX, relativeCenterY) {
-      if (svg === undefined) {
-        return sectionInstance;
-      }
-
-      setCoordPoints.call(sectionInstance, [...arguments]);
-
-      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
-
-      if (sectionInstance.isActive) {
-        path.classList.add("active");
-      }
-
-      svg.current.appendChild(path);
-
-      return sectionInstance;
-    }
-  }
+    saveShape(section)
+  };
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

@@ -5,9 +5,8 @@ import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
-import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
-import setSectionData from "../../javascript/setSectionData";
+import { EqualAnglesCorner } from "../../javascript/Section";
 
 export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -49,29 +48,15 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
     }
   }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => saveShape(drawCorner(centerX, centerY))
+  const drawShape = (centerX, centerY) => {
+    const section = new EqualAnglesCorner(centerX, centerY, degree, corner);
 
-  function drawCorner(centerX, centerY) {
-    const sectionInstance = setSectionData.call(corner, centerX, centerY, degree, idCoordInArray)
-
-    return function (svg, relativeCenterX, relativeCenterY) {
-      if (svg === undefined) {
-        return sectionInstance;
-      }
-
-      setCoordPoints.call(sectionInstance, [...arguments]);
-
-      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
-      
-      if (sectionInstance.isActive) {
-        path.classList.add("active");
-      }
-
-      svg.current.appendChild(path);
-
-      return sectionInstance;
+    if (Number.isInteger(idCoordInArray)) {
+      section.calcSectionCenter(idCoordInArray);
     }
-  }
+
+    saveShape(section)
+  };
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

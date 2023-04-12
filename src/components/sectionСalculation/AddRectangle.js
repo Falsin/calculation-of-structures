@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import changeStatus from "../../javascript/changeStatusInList";
-import uniqid from 'uniqid';
 import { StyledSectionLi } from "./styledComponents";
-import setSectionData from "../../javascript/setSectionData";
+import { Rectangle } from "../../javascript/Section";
 
 
 export default function AddRectangle({ saveShape }) {
@@ -11,30 +10,9 @@ export default function AddRectangle({ saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
 
-  function drawRectangle() {
-    const rectangle = {
-      h: parseFloat(h),
-      b: parseFloat(b),
-      centerX,
-      centerY,
-      type: "rectangle",
-      uniqid: uniqid()
-    }
-
-    const sectionInstance = setSectionData.call(rectangle, rectangle.centerX, rectangle.centerY, 0)
-
-    return function (svg, relativeCenterX, relativeCenterY) {
-      if (svg === undefined) {
-        return sectionInstance;
-      }
-      
-      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
-
-      svg.current.appendChild(path);
-
-      return sectionInstance;
-    }
-  }
+  const drawShape = (centerX, centerY) => (
+    saveShape(new Rectangle(centerX, centerY, 0, {h, b})
+  ));
 
   return (
     <StyledSectionLi>
@@ -53,7 +31,7 @@ export default function AddRectangle({ saveShape }) {
           <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
         </div>
 
-        <input type="button" value="Добавить" onClick={() => saveShape(drawRectangle())} />
+        <input type="button" value="Добавить" onClick={() => saveShape(drawShape(centerX, centerY))} />
       </div>
     </StyledSectionLi>
   )

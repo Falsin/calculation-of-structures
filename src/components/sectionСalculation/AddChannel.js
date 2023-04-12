@@ -5,9 +5,8 @@ import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
-import setCoordPoints from "../../javascript/setCoordPoints";
 import RadioFields from "./RadioFields";
-import setSectionData from "../../javascript/setSectionData";
+import { Channel } from "../../javascript/Section";
 
 export default function AddChannel({ saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
@@ -33,6 +32,13 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
     }
   })
 
+  useEffect(() => {
+    if (!isBtnPointsActive && idCoordInArray !== null) {
+      setIdCoordInArray(null);
+      createCirclesInSvg([]);
+    }
+  }, [isBtnPointsActive])
+
   async function drawShapeUsingPoints() {
     const shapeArr = saveShape();
 
@@ -41,36 +47,15 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
     setIdCoordInArray(null);
   }
 
-  useEffect(() => {
-    if (!isBtnPointsActive && idCoordInArray !== null) {
-      setIdCoordInArray(null);
-      createCirclesInSvg([]);
+  const drawShape = (centerX, centerY) => {
+    const section = new Channel(centerX, centerY, degree, channel);
+
+    if (Number.isInteger(idCoordInArray)) {
+      section.calcSectionCenter(idCoordInArray);
     }
-  }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => saveShape(drawChannel(centerX, centerY))
-
-  function drawChannel(centerX, centerY) {
-    const sectionInstance = setSectionData.call(channel, centerX, centerY, degree, idCoordInArray)
-
-    return function (svg, relativeCenterX, relativeCenterY) {
-      if (svg === undefined) {
-        return sectionInstance;
-      }
-
-      setCoordPoints.call(sectionInstance, [...arguments]);
-
-      const path = sectionInstance.draw(relativeCenterX, relativeCenterY);
-
-      if (sectionInstance.isActive) {
-        path.classList.add("active");
-      }
-
-      svg.current.appendChild(path);
-
-      return sectionInstance;
-    }
-  }
+    saveShape(section)
+  };
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

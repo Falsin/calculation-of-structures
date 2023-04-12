@@ -20,15 +20,13 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
   }, [selectedId])
 
   function changeActiveSection() {
-    const shapes = arrayShapes.map(elem => elem());
-
-    const activeSection = shapes.find(elem => elem.isActive == true);
+    const activeSection = arrayShapes.find(elem => elem.isActive == true);
 
     if (activeSection) {
       activeSection.isActive = false;
     }
 
-    const requiredSection = shapes.find(elem => elem.uniqid == selectedId);
+    const requiredSection = arrayShapes.find(elem => elem.uniqid == selectedId);
 
     if (requiredSection) {
       requiredSection.isActive = true;
@@ -41,10 +39,8 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
   }
 
   function setActiveSection(uniqid, eventType) {
-    const shapes = arrayShapes.map(elem => elem());
-
     if (!selectedId) {
-      const requiredSection = shapes.find(elem => elem.uniqid == uniqid);
+      const requiredSection = arrayShapes.find(elem => elem.uniqid == uniqid);
 
       if (eventType == "mouseleave") {
         requiredSection.isActive = false;
@@ -59,9 +55,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
 
   return (
     <ul>
-      {arrayShapes.map(elem => {
-        const shape = elem();
-
+      {arrayShapes.map(shape => {
         return (
           <li 
             style={{border: "solid 1px black"}} 
@@ -92,24 +86,23 @@ function Section({ arrayShapes, shape, setArrayShapes }) {
   }
 
   function isSameValue() {
-    return centerX == shape.centerX && centerY == shape.centerY && degree == shape.degree;
+    return centerX == shape.centerX && centerY == shape.centerY && +degree/360%1*360 == shape.degree;
   }
 
   function changeSectionParams() {
     shape.centerX = +centerX;
     shape.centerY = +centerY;
-    shape.degree = (degree) ? shape.degree + +degree : 0;
+    shape.degree = +degree
     const newArr = arrayShapes.map(elem => elem);
     setArrayShapes(newArr)
     setCenterX(shape.centerX)
     setCenterY(shape.centerY)
-    setDegree(shape.degree)
   }
 
-  const increaseDegree = () => setDegree((degree == 270) ? 0 : degree + 90);
+  const increaseDegree = () => setDegree(degree + 90);
 
   function deleteSection() {
-    const filteredArray = arrayShapes.filter(func => func().uniqid != shape.uniqid);
+    const filteredArray = arrayShapes.filter(section => section.uniqid != shape.uniqid);
     setArrayShapes(filteredArray)
   }
 
@@ -121,7 +114,7 @@ function Section({ arrayShapes, shape, setArrayShapes }) {
             {key != "degree" 
               ? <input onChange={(e) => func(e.target.value)} defaultValue={shape[key]}/>
               : <>
-                  <input onChange={(e) => func(e.target.value)} value={degree}/>
+                  <input onChange={(e) => func(e.target.value)} value={degree/360%1*360} readOnly/>
                   <button typeof="button" onClick={() => increaseDegree()} type="button">Повернуть на 90 градусов</button>
                 </>
             } 

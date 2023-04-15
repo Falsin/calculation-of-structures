@@ -8,7 +8,7 @@ import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import RadioFields from "./RadioFields";
 import { Beam } from "../../javascript/Section";
 
-export default function AddBeam({saveShape, isPointsModeActive }) {
+export default function AddBeam({saveShape, isPointsModeActive, shapeDataForCirclesMode, setShapeDataForCirclesMode }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [beam, setBeam] = useState(null);
@@ -28,17 +28,12 @@ export default function AddBeam({saveShape, isPointsModeActive }) {
 
   useEffect(() => {
     if (idCoordInArray !== null) {
-      drawShapeUsingPoints()
+      setShapeDataForCirclesMode({
+        shape: new Beam(centerX, centerY, degree, beam),
+        shapeId: idCoordInArray
+      })
     }
-  })
-
-  async function drawShapeUsingPoints() {
-    const shapeArr = saveShape();
-
-    const result = await createCirclesInSvg(shapeArr);
-    drawShape(result.x, result.y);
-    setIdCoordInArray(null);
-  }
+  }, [idCoordInArray])
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {

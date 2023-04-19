@@ -4,11 +4,10 @@ import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import RadioFields from "./RadioFields";
 import { UnequalAnglesCorner } from "../../javascript/Section";
 
-export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive }) {
+export default function AddUnequalAnglesCorners({ useShapeDataForCirclesMode, saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [corner, setCorner] = useState(null);
@@ -20,7 +19,6 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
 
   const corners = useSelector(selectAllUnequalAnglesCorners);
   const cornersStatus = useSelector(state => state.unequalAnglesCorners.status);
-
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -31,34 +29,26 @@ export default function AddUnequalAnglesCorners({ saveShape, isPointsModeActive 
 
   useEffect(() => {
     if (idCoordInArray !== null) {
-      drawShapeUsingPoints()
+      useShapeDataForCirclesMode({
+        shape: new UnequalAnglesCorner(centerX, centerY, degree, corner, activeCase),
+        shapeId: idCoordInArray
+      })
     }
-  })
+  }, [idCoordInArray])
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
       setIdCoordInArray(null)
-      createCirclesInSvg([]);
     }
   }, [isBtnPointsActive])
 
-  async function drawShapeUsingPoints() {
-    const shapeArr = saveShape();
-
-    const result = await createCirclesInSvg(shapeArr);
-    drawShape(result.x, result.y);
-    setIdCoordInArray(null);
-  }
-
-  const drawShape = (centerX, centerY) => {
-    const section = new UnequalAnglesCorner(centerX, centerY, degree, corner, activeCase);
-
-    if (Number.isInteger(idCoordInArray)) {
-      section.calcSectionCenter(idCoordInArray);
+  useEffect(() => {
+    if (useShapeDataForCirclesMode.getShapeData() == null) {
+      setIdCoordInArray(null)
     }
+  }, [useShapeDataForCirclesMode.getShapeData])
 
-    saveShape(section)
-  };
+  const drawShape = (centerX, centerY) => saveShape(new UnequalAnglesCorner(centerX, centerY, degree, corner, activeCase));
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

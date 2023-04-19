@@ -4,11 +4,10 @@ import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import RadioFields from "./RadioFields";
 import { Beam } from "../../javascript/Section";
 
-export default function AddBeam({saveShape, isPointsModeActive, shapeDataForCirclesMode, setShapeDataForCirclesMode }) {
+export default function AddBeam({useShapeDataForCirclesMode, saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [beam, setBeam] = useState(null);
@@ -28,7 +27,7 @@ export default function AddBeam({saveShape, isPointsModeActive, shapeDataForCirc
 
   useEffect(() => {
     if (idCoordInArray !== null) {
-      setShapeDataForCirclesMode({
+      useShapeDataForCirclesMode({
         shape: new Beam(centerX, centerY, degree, beam),
         shapeId: idCoordInArray
       })
@@ -38,19 +37,16 @@ export default function AddBeam({saveShape, isPointsModeActive, shapeDataForCirc
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
       setIdCoordInArray(null)
-      createCirclesInSvg([]);
     }
   }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => {
-    const section = new Beam(centerX, centerY, degree, beam);
-
-    if (Number.isInteger(idCoordInArray)) {
-      section.calcSectionCenter(idCoordInArray);
+  useEffect(() => {
+    if (useShapeDataForCirclesMode.getShapeData() == null) {
+      setIdCoordInArray(null)
     }
+  }, [useShapeDataForCirclesMode.getShapeData])
 
-    saveShape(section)
-  };
+  const drawShape = (centerX, centerY) => saveShape(new Beam(centerX, centerY, degree, beam));
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

@@ -4,11 +4,10 @@ import { fetchChannels, selectAllChannels } from "../../redux/channelsSlice";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import RadioFields from "./RadioFields";
 import { Channel } from "../../javascript/Section";
 
-export default function AddChannel({ saveShape, isPointsModeActive }) {
+export default function AddChannel({ useShapeDataForCirclesMode, saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [channel, setChannel] = useState(null);
@@ -28,38 +27,31 @@ export default function AddChannel({ saveShape, isPointsModeActive }) {
 
   useEffect(() => {
     if (idCoordInArray !== null) {
-      drawShapeUsingPoints()
+      useShapeDataForCirclesMode({
+        shape: new Channel(centerX, centerY, degree, channel),
+        shapeId: idCoordInArray
+      })
     }
-  })
+  }, [idCoordInArray])
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
-      setIdCoordInArray(null);
-      createCirclesInSvg([]);
+      setIdCoordInArray(null)
     }
   }, [isBtnPointsActive])
 
-  async function drawShapeUsingPoints() {
-    const shapeArr = saveShape();
-
-    const result = await createCirclesInSvg(shapeArr);
-    drawShape(result.x, result.y);
-    setIdCoordInArray(null);
-  }
-
-  const drawShape = (centerX, centerY) => {
-    const section = new Channel(centerX, centerY, degree, channel);
-
-    if (Number.isInteger(idCoordInArray)) {
-      section.calcSectionCenter(idCoordInArray);
+  useEffect(() => {
+    if (useShapeDataForCirclesMode.getShapeData() == null) {
+      setIdCoordInArray(null)
     }
+  }, [useShapeDataForCirclesMode.getShapeData])
 
-    saveShape(section)
-  };
+  const drawShape = (centerX, centerY) => saveShape(new Channel(centerX, centerY, degree, channel));
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);
   }
+
   return (
     <StyledSectionLi>
       <h3 onClick={(e) => changeStatus(e)}>Швеллер</h3>

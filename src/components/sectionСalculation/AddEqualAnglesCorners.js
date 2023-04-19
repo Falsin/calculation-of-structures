@@ -4,11 +4,10 @@ import { selectAllEqualAnglesCorners, fetchEqualAnglesCorners } from "../../redu
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import Preview from "./Preview";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import RadioFields from "./RadioFields";
 import { EqualAnglesCorner } from "../../javascript/Section";
 
-export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive }) {
+export default function AddEqualAnglesCorners({useShapeDataForCirclesMode, saveShape, isPointsModeActive }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [corner, setCorner] = useState(null);
@@ -18,7 +17,6 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
 
   const corners = useSelector(selectAllEqualAnglesCorners);
   const cornersStatus = useSelector(state => state.equalAnglesCorners.status);
-
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -29,34 +27,26 @@ export default function AddEqualAnglesCorners({ saveShape, isPointsModeActive })
 
   useEffect(() => {
     if (idCoordInArray !== null) {
-      drawShapeUsingPoints()
+      useShapeDataForCirclesMode({
+        shape: new EqualAnglesCorner(centerX, centerY, degree, corner),
+        shapeId: idCoordInArray
+      })
     }
-  })
-
-  async function drawShapeUsingPoints() {
-    const shapeArr = saveShape();
-
-    const result = await createCirclesInSvg(shapeArr);
-    drawShape(result.x, result.y);
-    setIdCoordInArray(null);
-  }
+  }, [idCoordInArray])
 
   useEffect(() => {
     if (!isBtnPointsActive && idCoordInArray !== null) {
       setIdCoordInArray(null)
-      createCirclesInSvg([]);
     }
   }, [isBtnPointsActive])
 
-  const drawShape = (centerX, centerY) => {
-    const section = new EqualAnglesCorner(centerX, centerY, degree, corner);
-
-    if (Number.isInteger(idCoordInArray)) {
-      section.calcSectionCenter(idCoordInArray);
+  useEffect(() => {
+    if (useShapeDataForCirclesMode.getShapeData() == null) {
+      setIdCoordInArray(null)
     }
+  }, [useShapeDataForCirclesMode.getShapeData])
 
-    saveShape(section)
-  };
+  const drawShape = (centerX, centerY) => saveShape(new EqualAnglesCorner(centerX, centerY, degree, corner));
 
   function changeOrientation() {
     setDegree(degree == 270 ? 0 : degree + 90);

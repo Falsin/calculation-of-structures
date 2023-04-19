@@ -1,85 +1,54 @@
 import uniqid from 'uniqid';
-import { createTextCoords } from './addCoordText';
-import calcScale from './calcScale';
 import Axis from './Axis';
+import createCirclesInSvg from './addCirclesToSVG';
 
-export default function drawShapesArray(sourceGroup, group, arrayShapes, result, showCoords) {
+export default function drawShapesArray(sourceGroup, arrayShapes) {
   const style = getComputedStyle(sourceGroup.current);
 
   const auxiliaryProps = auxiliaryCalc(arrayShapes, style);
 
-  const dataShapes = createDataShapes(auxiliaryProps, arguments);
+  return arrayShapes.map(shape => {
+    const relativeCenterX = auxiliaryProps.leftXLimit + (shape.centerX - auxiliaryProps.xLimits[0]);
+    const relativeCenterY = auxiliaryProps.bottomYLimit + (shape.centerY - auxiliaryProps.yLimits[0]);
 
-  createAxisAndCoords(dataShapes, auxiliaryProps, arguments);
+    shape.relativeCenterX = relativeCenterX;
+    shape.relativeCenterY = relativeCenterY;
+    shape.createD();
+    createCirclesInSvg(shape);
+
+    return shape;
+  })
 }
 
 function auxiliaryCalc(arrayShapes, style) {
   const centerXWindow = parseFloat(style.width) / 2;
   const centerYWindow = parseFloat(style.height) / 2;
 
-  const arrayCentersCoordsX = arrayShapes.map(shapeFunc => shapeFunc().centerX);
-  const arrayCentersCoordsY = arrayShapes.map(shapeFunc => shapeFunc().centerY);
+  const arrayCentersCoordsX = arrayShapes.map(obj => obj.centerX);
+  const arrayCentersCoordsY = arrayShapes.map(obj => obj.centerY);
 
   const xLimits = [Math.min(...arrayCentersCoordsX), Math.max(...arrayCentersCoordsX)];
   const yLimits = [Math.min(...arrayCentersCoordsY), Math.max(...arrayCentersCoordsY)];
   const leftXLimit = centerXWindow - (xLimits[1] - xLimits[0])/2;
   const bottomYLimit = centerYWindow - (yLimits[1] - yLimits[0])/2;
 
-  return { arrayCentersCoordsX, arrayCentersCoordsY, xLimits, yLimits, leftXLimit, bottomYLimit }
+  return { xLimits, yLimits, leftXLimit, bottomYLimit }
 }
 
-function createDataShapes(auxiliaryProps, argFunc) {
-  const { 
-    leftXLimit, 
-    arrayCentersCoordsX, 
-    xLimits, 
-    bottomYLimit, 
-    arrayCentersCoordsY, 
-    yLimits 
-  } = auxiliaryProps;
-
-  const [ sourceGroup, , arrayShapes ] = argFunc;
-
-  return arrayShapes.map((shape, id) => {
-    const relativeCenterX = leftXLimit + (arrayCentersCoordsX[id] - xLimits[0]);
-    const relativeCenterY = bottomYLimit + (arrayCentersCoordsY[id] - yLimits[0]);
-
-    const sectionInstance = shape(sourceGroup, relativeCenterX, relativeCenterY);
-    return { sectionInstance, x: relativeCenterX, y: relativeCenterY }
-  })
-}
-
-function createAxisAndCoords(dataShapes, auxiliaryProps, argFunc) {
-  const [ sourceGroup, , , result ] = argFunc
-  const scale = calcScale(sourceGroup);
-
-  dataShapes.forEach((obj) => createTextCoords(obj, argFunc, scale));
-
-  drawCommonAxis(dataShapes, sourceGroup, scale)
-
-  if (result) {
-    drawMainAxis(argFunc, auxiliaryProps, scale);
-  }
-}
-
-function drawCommonAxis(dataShapes, sourceGroup, scale) {
+function drawCommonAxis(shape, sourceGroup, scale, id) {
   const styleObj = sourceGroup.current.getBBox();
+  let arr = [];
 
-  dataShapes.forEach((obj, id) => {
+  if (styleObj.width * styleObj.height) {
     const commonAxes = [
-      {x: obj.x},
-      {y: obj.y} 
+      {x: shape.relativeCenterX},
+      {y: shape.relativeCenterY} 
     ];
-
-    const arr = createAxisArray({commonAxes, id, styleObj});
-
-    arr.forEach(axis => {
-      axis.changeLength((50/scale)+2)
-
-      Object.values(drawAxis({...axis, scale}))
-        .forEach(elem => sourceGroup.current.appendChild(elem));
-    })
-  })
+  
+    arr = createAxisArray({commonAxes, id, styleObj});
+    arr.forEach(axis => axis.changeLength(15));
+  }
+  return arr;
 }
 
 function drawAxis({x1, y1, x2, y2, axisName, color, scale}) {
@@ -153,9 +122,9 @@ function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
   }
 }
 
-function drawMainAxis(argFunc, auxiliaryProps, scale) {
-  const [ sourceGroup, group, , result ] = argFunc
-  const { leftXLimit, bottomYLimit } = auxiliaryProps;
+function drawMainAxis(arrayShapes, sourceGroup, result) {
+  const style = getComputedStyle(sourceGroup.current);
+  const { xLimits, yLimits, leftXLimit, bottomYLimit } = auxiliaryCalc(arrayShapes, style);
   
   const styleObj = sourceGroup.current.getBBox();
   const relativeCenterX = leftXLimit + result.centerOfGravity.value.Xc;
@@ -168,22 +137,9 @@ function drawMainAxis(argFunc, auxiliaryProps, scale) {
     {y: relativeCenterY}
   ]
 
-  let arr = createAxisArray({styleObj, mainAxes, result});
-
-  arr.map(axis => {
-    axis.changeLength(60/scale+2);
-    const nodeElements = drawAxis({...axis, scale});
-
-    if (axis.axisName == "V" || axis.axisName == "U") {
-      Object.values(nodeElements).forEach(elem => {
-        group.current.appendChild(elem);
-        const { text } = nodeElements;
-        text.setAttributeNS(null, "transform", `scale(1, -1) rotate(${-result.degree.value})`);
-      });
-    } else {
-      Object.values(nodeElements).forEach(elem => sourceGroup.current.appendChild(elem));
-    }
-  })
+  const arr = createAxisArray({styleObj, mainAxes, result});
+  arr.forEach(axis => axis.changeLength(30));
+  return arr;
 }
 
-export { createAxisArray, drawAxis };
+export { drawMainAxis, drawCommonAxis, createAxisArray, drawAxis, auxiliaryCalc };

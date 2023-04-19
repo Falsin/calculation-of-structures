@@ -5,63 +5,35 @@ import AddChannel from "./AddChannel";
 import AddEqualAnglesCorners from "./AddEqualAnglesCorners";
 import AddUnequalAnglesCorners from "./AddUnequalAnglesCorners";
 import AddRectangle from "./AddRectangle";
-import drawShapesArray from "../../javascript/drawShapesArray";
 import changeStatus from "../../javascript/changeStatusInList";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import SectionComposition from "./SectionComposition";
+import StyledSourceGroup from "./SourceGroup";
+import StyledResultGroup from "./ResultGroup";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
   const sourceGroup = useRef(null);
-  const resultGroup = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
   const [isPointsModeActive, setPointsMode] = useState(false);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const [viewBox, setViewBox] = useState(`0 0 800 600`);
   const [showCoords, setShowMode] = useState(true);
+  const [shapeDataForCirclesMode, setShapeDataForCirclesMode] = useState(null);
   const [funcForSwitchActiveSection, setFuncForSwitchActiveSection] = useState(null);
-
-  const saveShape = (func) => {
-    return func ? setArrayShapes([...arrayShapes, func]) : arrayShapes;
-  }
-
-  useEffect(() => {
-    draw()
-  }, [arrayShapes, result])
-
-  useEffect(() => {
-    const style = getComputedStyle(svg.current);
-    setWidth(parseFloat(style.width));
-    setHeight(parseFloat(style.height));
-  }, [svg])
-
-  useEffect(() => {
-    sourceGroup.current.setAttributeNS(null, "visibility", "visible");
-  }, [viewBox])
 
   useEffect(() => {
     setPointsMode(arrayShapes.length ? true : false);
-    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
   }, [arrayShapes.length])
 
-  useEffect(() => {
-    draw()
-  }, [showCoords])
-
-  function draw() {
-    sourceGroup.current.replaceChildren();
-    drawShapesArray(sourceGroup, resultGroup, arrayShapes, result, showCoords);
-    setViewBoxSize();
+  const saveShape = (obj) => {
+    return obj ? setArrayShapes([...arrayShapes, obj]) : arrayShapes;
   }
-
 
   async function submit(e) {
     e.preventDefault();
 
     const request = await fetch("http://localhost:3000/flatSection/", {
       method: "PUT",
-      body: JSON.stringify(arrayShapes.map(item => item())),
+      body: JSON.stringify(arrayShapes),
       headers: {
         'Content-Type': 'application/json'
       },
@@ -71,21 +43,31 @@ function InputingData({className, children, setResult, result}) {
     setResult(response);
   }
 
-  createCirclesInSvg.svg = sourceGroup.current;
+  function setViewBoxSize(box) {
+    const style = box.getBBox();
 
-  function setViewBoxSize() {
-    let style = resultGroup.current ? resultGroup.current.getBBox() : sourceGroup.current.getBBox();
-    setViewBox(`${style.x-25} ${style.y-25} ${Math.round(style.width)+50} ${Math.round(style.height)+50}`);
+    if (!sourceGroup.current) {
+      sourceGroup.current = box;
+    }
+
+    setViewBox(`${style.x-50} ${style.y-50} ${Math.round(style.width)+100} ${Math.round(style.height)+100}`);
   }
+
+  function useShapeDataForCirclesMode(obj) {
+    if (obj) {
+      setShapeDataForCirclesMode(obj);
+    }
+  }
+
+  useShapeDataForCirclesMode.getShapeData = () => shapeDataForCirclesMode;
+  useShapeDataForCirclesMode.changeShapeData = () => setShapeDataForCirclesMode(null);
 
   return (
     <div className={className}>
       <SVG ref={svg} viewBox={viewBox}>
-        <g ref={sourceGroup}/>
-        {!result 
-          ? null 
-          : <g ref={resultGroup} style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`, transformOrigin: `${width/2}px ${height/2}px`}} />
-        }
+        <StyledSourceGroup saveShape={saveShape} arrayShapes={arrayShapes} setViewBoxSize={setViewBoxSize} useShapeDataForCirclesMode={useShapeDataForCirclesMode} showCoords={showCoords} />
+        {/* <StyledResultGroup arrayShapes={arrayShapes} sourceGroup={sourceGroup} result={result} /> */}
+        {!result ? null : <StyledResultGroup arrayShapes={arrayShapes} sourceGroup={sourceGroup} result={result} />}
       </SVG>
       <form onSubmit={submit}>
         <ul style={{position: "relative"}}>
@@ -93,11 +75,11 @@ function InputingData({className, children, setResult, result}) {
             <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Простые сечения</h2>
             
             <ul style={{position: "relative"}}>
-              {<AddBeam saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
-              {<AddChannel saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
-              {<AddEqualAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
-              {<AddUnequalAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
-              {<AddRectangle saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>}
+              <AddBeam saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+              <AddChannel saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+              <AddEqualAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+              <AddUnequalAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+              <AddRectangle saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>
             </ul>
           </li>
 
@@ -152,13 +134,6 @@ const StyledInputingData = styled(InputingData)`
   }
 
   form {
-    svg > path,
-    g > path {
-      transition-property: transform;
-      transition-duration: 1s;
-      transition-timing-function: linear;
-    }
-
     svg g,
     svg circle,
     svg g text {

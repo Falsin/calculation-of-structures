@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import uniqid from 'uniqid';
 
-export default function Axis({elem, scale, activeCase}) {
+export default function Axis({elem, scale, result}) {
   const [id] = useState(uniqid())
-
-  console.log('hello!')
 
   return <g>
     <defs>
@@ -29,7 +27,7 @@ export default function Axis({elem, scale, activeCase}) {
         transform-origin={`${elem.x2} ${elem.y2}`}
         textAnchor="middle"
         fontSize={`${(16/scale)+2}`}
-        transform={`scale(${activeCase == 2 ? -1 : 1} -1)`}
+        transform={`scale(1 -1) rotate(${result ? -result.degree.value : 0})`}
       >
         {elem.axisName}
       </text>

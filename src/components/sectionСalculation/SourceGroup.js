@@ -3,7 +3,7 @@ import styled from "styled-components";
 import calcScale from "../../javascript/calcScale";
 import drawShapesArray, { drawCommonAxis } from "../../javascript/drawShapesArray";
 import Axis from "./AxisComponent";
-import calcRotateCoords from "../../javascript/calcRotateCoords";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 
 function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCirclesMode, showCoords, className, children}) {
   const [localArrayShapes, setLocalArrayShapes] = useState([]);
@@ -44,14 +44,7 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
         return <g key={shape.uniqid} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}}>
             <path style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}} id={shape.uniqid} d={shape.d} className={shape.isActive ? "active" : ""} />
             {shape.coords.map((item, id) => {
-              let actualValueX = item.x;
-              let actualValueY = item.y;
-
-              if (shape.degree != 0) {
-                const rotateCoordsObj = calcRotateCoords(item, 0, 0, shape.degree);
-                actualValueX = rotateCoordsObj.rotateX;
-                actualValueY = rotateCoordsObj.rotateY;
-              }
+              const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid]
 
               return <>
                 <text
@@ -59,7 +52,7 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
                   x={shape.relativeCenterX + item.x}
                   y={shape.relativeCenterY + item.y}
                 >
-                  {(shape.centerX + actualValueX).toFixed(1)}, {(shape.centerY + actualValueY).toFixed(1)}
+                  {rotateCoordsArr[id].x}, {rotateCoordsArr[id].y}
                 </text>
 
                 {!objShapeData

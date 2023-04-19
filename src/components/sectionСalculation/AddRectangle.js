@@ -10,9 +10,7 @@ export default function AddRectangle({ saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
 
-  const drawShape = (centerX, centerY) => (
-    saveShape(new Rectangle(centerX, centerY, 0, {h, b})
-  ));
+  const drawShape = (centerX, centerY) => saveShape(new Rectangle(centerX, centerY, 0, {h, b}));
 
   return (
     <StyledSectionLi>

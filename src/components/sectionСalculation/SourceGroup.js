@@ -5,12 +5,13 @@ import drawShapesArray, { drawCommonAxis } from "../../javascript/drawShapesArra
 import Axis from "./AxisComponent";
 import calcRotateCoords from "../../javascript/calcRotateCoords";
 
-function SourceGroup({arrayShapes, setViewBoxSize, className, children, shapeDataForCirclesMode, setShapeDataForCirclesMode}) {
+function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCirclesMode, showCoords, className, children}) {
   const [localArrayShapes, setLocalArrayShapes] = useState([]);
   const [scale, setScale] = useState(1);
   const [arrayAxes, setArrayAxes] = useState([])
   const sourceGroup = useRef(null);
   const shapesGroup = useRef(null);
+  const objShapeData = useShapeDataForCirclesMode.getShapeData();
 
   useEffect(() => {
     sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
@@ -31,11 +32,9 @@ function SourceGroup({arrayShapes, setViewBoxSize, className, children, shapeDat
 
   return <g ref={sourceGroup} className={className}>
     <g className="commonAxes">
-      {arrayAxes.map((elem, id) => {
+      {!arrayAxes.length ? null : arrayAxes.map((elem, id) => {
         return <g key={localArrayShapes[id].uniqid}>
-          {elem.map((axisObj, index) => {
-          return <Axis elem={axisObj} scale={scale} activeCase={localArrayShapes[id].activeCase} localArrayShapes={localArrayShapes} />
-        })}
+          {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={localArrayShapes}/>)}
         </g>
       })}
     </g>
@@ -43,29 +42,33 @@ function SourceGroup({arrayShapes, setViewBoxSize, className, children, shapeDat
     <g ref={shapesGroup} className="shapes">
       {localArrayShapes.map((shape, id) => {
         return <g key={shape.uniqid} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}}>
-            <path id={shape.uniqid} d={shape.d}/>
-            {shape.coords.map(item => {
+            <path style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}} id={shape.uniqid} d={shape.d} className={shape.isActive ? "active" : ""} />
+            {shape.coords.map((item, id) => {
               let actualValueX = item.x;
               let actualValueY = item.y;
 
               if (shape.degree != 0) {
-                const rotateCoordsObj = calcRotateCoords(item, shape.centerX, shape.centerY, shape.degree);
+                const rotateCoordsObj = calcRotateCoords(item, 0, 0, shape.degree);
                 actualValueX = rotateCoordsObj.rotateX;
                 actualValueY = rotateCoordsObj.rotateY;
               }
 
               return <>
                 <text
-                  style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX+item.x}px ${shape.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
+                  style={{visibility: showCoords ? "visible" : "hidden", transform: `scale(1, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX+item.x}px ${shape.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
                   x={shape.relativeCenterX + item.x}
                   y={shape.relativeCenterY + item.y}
                 >
                   {(shape.centerX + actualValueX).toFixed(1)}, {(shape.centerY + actualValueY).toFixed(1)}
                 </text>
 
-                {!shapeDataForCirclesMode
+                {!objShapeData
                   ? null
-                  : <circle onClick={() => shapeDataForCirclesMode.shape.calcRelativeCenter(shape, {x: actualValueX, y: actualValueY}, shapeDataForCirclesMode)}
+                  : <circle onClick={() => {
+                    objShapeData.shape.calcRelativeCenter(shape, id, objShapeData);
+                    saveShape(objShapeData.shape);
+                    useShapeDataForCirclesMode.changeShapeData();
+                  }}
                       cx={shape.relativeCenterX + item.x} 
                       cy={shape.relativeCenterY + item.y} 
                       r="2" 
@@ -90,6 +93,10 @@ const StyledSourceGroup = styled(SourceGroup)`
 
     path {
       fill-opacity: 0;
+
+      &:active {
+        stroke: red;
+      }
     }
 
     circle {

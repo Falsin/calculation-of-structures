@@ -1,21 +1,37 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { createAxisArray, drawAxis } from "../../javascript/drawShapesArray";
+import { createAxisArray, drawCommonAxis } from "../../javascript/drawShapesArray";
+import Axis from "./AxisComponent";
+import styled from "styled-components";
+import { Beam, Channel, EqualAnglesCorner, Rectangle, UnequalAnglesCorner } from "../../javascript/Section";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 
-export default function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive }) {
+function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive, className, children }) {
   const svg = useRef(null);
-  const g = useRef(null)
+  const sectionPath = useRef(null)
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [deg, setDeg] = useState(degree);
-  const [axisArr, setAxisArr] = useState([]);
   const [circles, setCircles] = useState([]);
+  const [axesArr, setAxesArr] = useState([]);
+  const [sectionInstance, setSectionInstance] = useState(null)
   
   const section = useSelector(state => {
     const sectionArr = state[sectionName][sectionName];
     const reqElem = sectionArr.find(elem => (elem.h || elem.B || elem.b) >= 100);
     return reqElem
   });
+
+  const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;
+
+  const sectionsObj = {
+    beams: (centerX, centerY) => new Beam(centerX, centerY, deg, section),
+    channels: (centerX, centerY) => new Channel(centerX, centerY, deg, section),
+    equalAnglesCorners: (centerX, centerY) => new EqualAnglesCorner(centerX, centerY, deg, section),
+    unequalAnglesCorners: (centerX, centerY) => new UnequalAnglesCorner(centerX, centerY, deg, section),
+    rectangles: (centerX, centerY) => new Rectangle(centerX, centerY, deg, section),
+  }
+
 
   useEffect(() => {
     if (degree !== deg) {
@@ -24,16 +40,8 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   }, [degree]);
 
   useEffect(() => {
-    createAxis()
-  }, [section]);
-
-  useEffect(() => {
     transformDependingOnActiveCase()
   }, [activeCase])
-
-  useEffect(() => {
-    addAxisInNode()
-  }, [axisArr])
 
   useEffect(() => {
     const style = getComputedStyle(svg.current);
@@ -42,17 +50,41 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
   }, [])
 
   useEffect(() => {
+    if (section) {
+      const { centerX, centerY } = findRelativeCenter();
+      const sectionInstance = sectionsObj[sectionName](centerX, centerY);
+
+      sectionInstance.relativeCenterX = centerX;
+      sectionInstance.relativeCenterY = centerY;
+      sectionInstance.createD();
+      createCirclesInSvg(sectionInstance)  
+      setSectionInstance(sectionInstance)
+    }
+  }, [section, activeCase])
+
+  useEffect(() => {
+    if (sectionPath.current) {
+      const distY = (B/2 || h/2 || b/2) - (h/2 || z0*10 || y0*10);
+
+      const copySectionInstance = {...sectionInstance};
+
+      copySectionInstance.relativeCenterY = height/2 - distY
+      setAxesArr(drawCommonAxis(copySectionInstance, sectionPath));
+    } 
+  }, [sectionInstance, activeCase])
+
+  function findRelativeCenter() {
+    const distX = b/2 - (z0*10 || x0*10 || b/2);
+    const distY = (B/2 || h/2 || b/2) - (h/2 || z0*10 || y0*10)
+
+    const centerX = width/2 - distX;
+    const centerY = height/2 + distY;
+    return { centerX, centerY }
+  }
+
+  useEffect(() => {
     createCircles()
   }, [isBtnPointsActive]);
-
-  const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;
-
-  const drawStringSections = {
-    beams: `M ${width/2 - b/2}, ${height/2 - h/2} h ${b} v ${t} h -${(b - s)/2} v ${h-2*t} h ${(b - s)/2} v ${t} h -${b} v -${t} h ${(b - s)/2} v -${h - 2*t} h -${(b - s)/2} z`,
-    channels: `M ${width/2 - b/2}, ${height/2 - h/2} h ${b} v ${t} h -${b - s} v ${h-2*t} h ${b - s} v ${t} h -${b}  z`,
-    equalAnglesCorners: `M ${width/2 - b/2}, ${height/2 - b/2} h ${t} v ${b - t} h ${b - t} v ${t} h ${-b} z`,
-    unequalAnglesCorners: `M ${width/2 - b/2}, ${height/2 - B/2} h ${t} v ${B - t} h ${b - t} v ${t} h ${-b} z`
-  }
 
   const coords = {
     beams: [
@@ -86,39 +118,7 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
     ]
   }
 
-  function createAxis() {
-    if (section) {
-      const style = getComputedStyle(svg.current);
-      const sourceGroup = g.current;
-
-      const dist = z0*10 || x0*10 || b/2;
-      let centerX = width/2 + (activeCase == 2 ? b/2 - dist : - b/2 + dist);
-
-      const centerY = height/2 - (B/2 || h/2 || b/2) + (h/2 || z0*10 || y0*10);
-
-      const commonAxes = [
-        {x: centerX},
-        {y: centerY},
-      ]
-
-      const styleObj = sourceGroup.getBBox();
-
-      const arr = createAxisArray({style, commonAxes, id: 0, styleObj})
-      setAxisArr(createNodeArr(arr))
-    }
-  }
-
-  function addAxisInNode() {
-    if (axisArr.length) {
-      axisArr.forEach(elem => g.current.appendChild(elem))
-    }
-  }
-
   function transformDependingOnActiveCase() {
-    axisArr.forEach(elem => {
-      elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`);
-    })
-
     circles.forEach(elem => elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
   }
 
@@ -145,29 +145,44 @@ export default function Preview({ sectionName, degree, activeCase, setIdCoordInA
       setCircles(circlesArr)
     }
   }
-  
-  function createNodeArr(arr) {
-    return arr.reduce((prev, curr, id) => {
-      const { line, defs } = drawAxis({...curr, color: (id == 1) ? "red" : "green"});
-      line.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
-      return [...prev, line, defs]
-    }, [])
-  }
 
   return (
-    <svg ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>
-      <g ref={g} style={{transform: `rotate(${-deg}deg)`, transformOrigin: "50% 50%"}}>
+    <svg className={className} ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, 1)"}}>
+      <g style={{transform: `rotate(${deg}deg)`, transformOrigin: "50% 50%"}}>
         {!section 
-          ? null 
-          : <path 
-            d={drawStringSections[sectionName]}
-            transform-origin="50% 50%"
-            transform={`scale(${activeCase == 2 ? -1 : 1}, -1)`}
-            fill="white" 
-            stroke="black"
-          />
+          ? null
+          :
+          <>
+            <g style={{transformOrigin: `${width/2}px ${height/2}px`, transform: `scale(${activeCase == 2 ? -1 : 1}, -1)`}}>
+              {axesArr.map(axisObj => <Axis elem={axisObj} scale={1} />)}
+            </g>
+            {!sectionInstance ? null : <path ref={sectionPath} style={{fillOpacity: 0}} transform-origin={`${width/2} ${height/2}`}
+              transform={`scale(${activeCase == 2 ? -1 : 1}, 1)`} d={sectionInstance.d} stroke="black" />}
+          </> 
         }
       </g>
     </svg>
   )
 }
+
+const StyledPreview = styled(Preview)`
+  g g:first-child path,
+  g g:first-child marker  {
+    stroke: green;
+    fill: green;
+  }
+
+  g g:nth-child(2) path,
+  g g:nth-child(2) marker  {
+    stroke: red;
+    fill: red;
+  }
+
+  * {
+    transition-property: transform;
+    transition-duration: 1s;
+    transition-timing-function: linear;
+  }
+`
+
+export default StyledPreview;

@@ -66,7 +66,6 @@ function InputingData({className, children, setResult, result}) {
     <div className={className}>
       <SVG ref={svg} viewBox={viewBox}>
         <StyledSourceGroup saveShape={saveShape} arrayShapes={arrayShapes} setViewBoxSize={setViewBoxSize} useShapeDataForCirclesMode={useShapeDataForCirclesMode} showCoords={showCoords} />
-        {/* <StyledResultGroup arrayShapes={arrayShapes} sourceGroup={sourceGroup} result={result} /> */}
         {!result ? null : <StyledResultGroup arrayShapes={arrayShapes} sourceGroup={sourceGroup} result={result} />}
       </SVG>
       <form onSubmit={submit}>
@@ -131,16 +130,6 @@ const StyledInputingData = styled(InputingData)`
   li > h3.active ~ ul {
     max-height: 1000px;
     margin-top: 10px;
-  }
-
-  form {
-    svg g,
-    svg circle,
-    svg g text {
-      transition-property: transform;
-      transition-duration: 1s;
-      transition-timing-function: linear;
-    }
   }
 `
 

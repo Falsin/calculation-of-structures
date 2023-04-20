@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAllUnequalAnglesCorners, fetchUnequalAnglesCorners } from "../../redux/unequalAnglesSlice";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
-import Preview from "./Preview";
+import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
 import { UnequalAnglesCorner } from "../../javascript/Section";
 
@@ -83,7 +83,7 @@ export default function AddUnequalAnglesCorners({ useShapeDataForCirclesMode, sa
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview 
+        <StyledPreview 
           sectionName={"unequalAnglesCorners"} 
           degree={degree} 
           activeCase={activeCase}

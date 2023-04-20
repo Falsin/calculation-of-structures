@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchBeams, selectAllBeams } from "../../redux/beamsSlice";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
-import Preview from "./Preview";
+import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
 import { Beam } from "../../javascript/Section";
 
@@ -78,7 +78,7 @@ export default function AddBeam({useShapeDataForCirclesMode, saveShape, isPoints
 
         <button type="button" onClick={changeOrientation}>{degree == 0 ? "Повернуть на 90°" : "Повернуть на 90°"}</button>
 
-        <Preview 
+        <StyledPreview 
           sectionName={"beams"} 
           degree={degree} 
           isBtnPointsActive={isBtnPointsActive} 

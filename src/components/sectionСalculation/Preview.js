@@ -28,20 +28,15 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
     beams: (centerX, centerY) => new Beam(centerX, centerY, deg, section),
     channels: (centerX, centerY) => new Channel(centerX, centerY, deg, section),
     equalAnglesCorners: (centerX, centerY) => new EqualAnglesCorner(centerX, centerY, deg, section),
-    unequalAnglesCorners: (centerX, centerY) => new UnequalAnglesCorner(centerX, centerY, deg, section),
+    unequalAnglesCorners: (centerX, centerY) => new UnequalAnglesCorner(centerX, centerY, deg, section, activeCase),
     rectangles: (centerX, centerY) => new Rectangle(centerX, centerY, deg, section),
   }
-
 
   useEffect(() => {
     if (degree !== deg) {
       setDeg(deg + 90)
     }
   }, [degree]);
-
-  useEffect(() => {
-    transformDependingOnActiveCase()
-  }, [activeCase])
 
   useEffect(() => {
     const style = getComputedStyle(svg.current);
@@ -57,7 +52,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
       sectionInstance.relativeCenterX = centerX;
       sectionInstance.relativeCenterY = centerY;
       sectionInstance.createD();
-      createCirclesInSvg(sectionInstance)  
+ 
       setSectionInstance(sectionInstance)
     }
   }, [section, activeCase])
@@ -75,90 +70,40 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
 
   function findRelativeCenter() {
     const distX = b/2 - (z0*10 || x0*10 || b/2);
-    const distY = (B/2 || h/2 || b/2) - (h/2 || z0*10 || y0*10)
+    const distY = (B/2 || h/2 || b/2) - (h/2 || z0*10 || y0*10);
 
     const centerX = width/2 - distX;
     const centerY = height/2 + distY;
     return { centerX, centerY }
   }
 
-  useEffect(() => {
-    createCircles()
-  }, [isBtnPointsActive]);
-
-  const coords = {
-    beams: [
-      {x: -b/2, y: h/2},
-      {x: b/2, y: h/2},
-      {x: b/2, y: -h/2},
-      {x: -b/2, y: -h/2}
-    ],
-    channels: [
-      {x: -b/2, y: h/2},
-      {x: b/2, y: h/2},
-      {x: b/2, y: -h/2},
-      {x: -b/2, y: -h/2},
-    ],
-    equalAnglesCorners: [
-      {x: -b/2, y: b/2},
-      {x: b/2, y: -b/2},
-      {x: -b/2, y: -b/2}
-    ],
-    unequalAnglesCorners: [
-      [
-        {x: -b/2, y: B/2},
-        {x: b/2, y: -B/2},
-        {x: -b/2, y: -B/2}
-      ],
-      [
-        {x: b/2, y: B/2},
-        {x: b/2, y: -B/2},
-        {x: -b/2, y: -B/2},
-      ]
-    ]
-  }
-
-  function transformDependingOnActiveCase() {
-    circles.forEach(elem => elem.setAttributeNS(null, "transform", `scale(${activeCase == 2 ? -1 : 1}, 1)`));
-  }
-
-  function createCircles() {
-    const circles = svg.current.querySelectorAll("circle");
-    circles.forEach(elem => elem.remove());
-
-    if (section && isBtnPointsActive) {  
-      const arr = !activeCase ? coords[sectionName] : coords[sectionName][activeCase-1];
-
-      const circlesArr = arr.map((elem, id) => {
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttributeNS(null, "cx", `${width/2 + elem.x}`);
-        circle.setAttributeNS(null, "cy", `${height/2 + elem.y}`);
-        circle.setAttributeNS(null, "r", `${4}`);
-        circle.setAttributeNS(null, "fill", "blue");
-        circle.setAttributeNS(null, "transform-origin", `${width/2} ${height/2}`);
-
-        circle.addEventListener("click", () => setIdCoordInArray(id))
-        g.current.appendChild(circle);
-        return circle;
-      });
-
-      setCircles(circlesArr)
-    }
-  }
-
   return (
-    <svg className={className} ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, 1)"}}>
-      <g style={{transform: `rotate(${deg}deg)`, transformOrigin: "50% 50%"}}>
-        {!section 
+    <svg className={className} ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>
+      <g style={{transform: `rotate(${-deg}deg)`, transformOrigin: "50% 50%"}}>
+        {!sectionInstance 
           ? null
-          :
-          <>
-            <g style={{transformOrigin: `${width/2}px ${height/2}px`, transform: `scale(${activeCase == 2 ? -1 : 1}, -1)`}}>
-              {axesArr.map(axisObj => <Axis elem={axisObj} scale={1} />)}
-            </g>
-            {!sectionInstance ? null : <path ref={sectionPath} style={{fillOpacity: 0}} transform-origin={`${width/2} ${height/2}`}
-              transform={`scale(${activeCase == 2 ? -1 : 1}, 1)`} d={sectionInstance.d} stroke="black" />}
-          </> 
+          : <>
+              <g style={{transformOrigin: `${width/2}px ${height/2}px`, transform: `scale(${activeCase == 2 ? -1 : 1}, 1)`}}>
+                {axesArr.map(axisObj => <Axis elem={axisObj} scale={1} />)}
+              </g>
+
+              <g className="shape" transform-origin={`${width/2} ${height/2}`} transform={`scale(${activeCase == 2 ? -1 : 1}, -1)`} >
+                <path ref={sectionPath} style={{fillOpacity: 0}} d={sectionInstance.d} stroke="black" />
+
+                {!isBtnPointsActive 
+                  ? null 
+                  : sectionInstance.coords.map((coordObj, id) => {
+                    return <circle 
+                      cx={sectionInstance.relativeCenterX+coordObj.x} 
+                      cy={sectionInstance.relativeCenterY-coordObj.y}
+                      r={4}
+                      fill="blue"
+                      onClick={() => setIdCoordInArray(id)}
+                      />
+                  })
+                }
+              </g>
+            </> 
         }
       </g>
     </svg>
@@ -166,14 +111,14 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
 }
 
 const StyledPreview = styled(Preview)`
-  g g:first-child path,
-  g g:first-child marker  {
+  & > g g:first-child g:first-child path,
+  & > g g:first-child g:first-child marker  {
     stroke: green;
     fill: green;
   }
 
-  g g:nth-child(2) path,
-  g g:nth-child(2) marker  {
+  & > g g:first-child g:nth-child(2) path,
+  & > g g:first-child g:nth-child(2) marker  {
     stroke: red;
     fill: red;
   }

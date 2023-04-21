@@ -7,7 +7,7 @@ export default function createCirclesInSvg(shape) {
       rotateCoords.rotateX += shape.centerX;
       rotateCoords.rotateY += shape.centerY;
 
-      return {x: rotateCoords.rotateX, y: rotateCoords.rotateY}
+      return {x: +(rotateCoords.rotateX).toFixed(1), y: +(rotateCoords.rotateY).toFixed(1)}
     })
 
     createCirclesInSvg.shapeCollectObj = {

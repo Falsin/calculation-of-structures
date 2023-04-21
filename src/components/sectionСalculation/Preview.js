@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { createAxisArray, drawCommonAxis } from "../../javascript/drawShapesArray";
+import { drawCommonAxis } from "../../javascript/drawShapesArray";
 import Axis from "./AxisComponent";
 import styled from "styled-components";
 import { Beam, Channel, EqualAnglesCorner, Rectangle, UnequalAnglesCorner } from "../../javascript/Section";
@@ -12,7 +12,6 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [deg, setDeg] = useState(degree);
-  const [circles, setCircles] = useState([]);
   const [axesArr, setAxesArr] = useState([]);
   const [sectionInstance, setSectionInstance] = useState(null)
   
@@ -55,7 +54,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
  
       setSectionInstance(sectionInstance)
     }
-  }, [section, activeCase])
+  }, [section])
 
   useEffect(() => {
     if (sectionPath.current) {
@@ -66,7 +65,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
       copySectionInstance.relativeCenterY = height/2 - distY
       setAxesArr(drawCommonAxis(copySectionInstance, sectionPath));
     } 
-  }, [sectionInstance, activeCase])
+  }, [sectionInstance])
 
   function findRelativeCenter() {
     const distX = b/2 - (z0*10 || x0*10 || b/2);

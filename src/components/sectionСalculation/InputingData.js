@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import AddBeam from "./AddBeam";
-import AddChannel from "./AddChannel";
-import AddEqualAnglesCorners from "./AddEqualAnglesCorners";
-import AddUnequalAnglesCorners from "./AddUnequalAnglesCorners";
 import AddRectangle from "./AddRectangle";
 import changeStatus from "../../javascript/changeStatusInList";
 import SectionComposition from "./SectionComposition";
 import StyledSourceGroup from "./SourceGroup";
 import StyledResultGroup from "./ResultGroup";
+import sectionsDataArr from "../../javascript/sectionsDataArr";
+import AddSection from "./AddSection";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
@@ -72,12 +70,11 @@ function InputingData({className, children, setResult, result}) {
         <ul style={{position: "relative"}}>
           <li>
             <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Простые сечения</h2>
-            
+
             <ul style={{position: "relative"}}>
-              <AddBeam saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
-              <AddChannel saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
-              <AddEqualAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
-              <AddUnequalAnglesCorners saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+              {sectionsDataArr.map(sectionObj => (
+                <AddSection sectionObj={sectionObj} saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
+              ))}
               <AddRectangle saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>
             </ul>
           </li>
@@ -138,10 +135,6 @@ const SVG = styled.svg`
   height: 600px;
   border: 1px solid black;
   transform: scale(1, -1);
-
-  path.active {
-    stroke: red;
-  }
 
   & g {
     width: inherit;

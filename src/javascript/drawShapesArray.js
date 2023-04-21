@@ -35,7 +35,7 @@ function auxiliaryCalc(arrayShapes, style) {
   return { xLimits, yLimits, leftXLimit, bottomYLimit }
 }
 
-function drawCommonAxis(shape, sourceGroup, scale, id) {
+function drawCommonAxis(shape, sourceGroup, id) {
   const styleObj = sourceGroup.current.getBBox();
   let arr = [];
 
@@ -49,49 +49,6 @@ function drawCommonAxis(shape, sourceGroup, scale, id) {
     arr.forEach(axis => axis.changeLength(15));
   }
   return arr;
-}
-
-function drawAxis({x1, y1, x2, y2, axisName, color, scale}) {
-  const xmlns = "http://www.w3.org/2000/svg";
-  const id = uniqid();
-  const scaleVal = scale ? scale : 1;
-
-  const defs = document.createElementNS(xmlns, "defs");
-
-  const marker = document.createElementNS(xmlns, "marker");
-  marker.setAttributeNS(null, "id", id);
-  marker.setAttributeNS(null, "markerWidth", "8");
-  marker.setAttributeNS(null, "markerHeight", "10");
-  marker.setAttributeNS(null, "refX", "4");
-  marker.setAttributeNS(null, "refY", "10");
-  marker.setAttributeNS(null, "stroke", color ? color : "black");
-  marker.setAttributeNS(null, "orient", `${x1 == x2 ? '0' : '-90'}`);
-
-  const triangle = document.createElementNS(xmlns, "path");
-  triangle.setAttributeNS(null, "d", `M 0.5, 0 l 3.5 10 l 3.5 -10`);
-  triangle.setAttributeNS(null, "fill", color ? color : "black");
-  triangle.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
-
-  marker.appendChild(triangle);
-  defs.appendChild(marker);
-
-  const line = document.createElementNS(xmlns, "path");
-  line.setAttributeNS(null, "d", `M ${x1}, ${y1} L ${x2}, ${y2}`);
-  line.setAttributeNS(null, "marker-end", `url(#${id})`);
-  line.setAttributeNS(null, "stroke", color ? color : "black");
-  line.setAttributeNS(null, "vector-effect", "non-scaling-stroke");
-
-  const text = document.createElementNS(xmlns, "text");
-  text.setAttributeNS(null, "x", `${x2}`);
-  text.setAttributeNS(null, "y", `${y2-(10/scaleVal)-2}`);
-  text.setAttributeNS(null, "transform-origin", `${x2} ${y2}`);
-  text.setAttributeNS(null, 'transform', `scale(1, -1)`);
-  text.setAttributeNS(null, "text-anchor", `middle`);
-  text.setAttributeNS(null, "font-size", `${(16/scaleVal)+2}`);
-
-  text.textContent = axisName;
-
-  return { line, text, defs }
 }
 
 function createAxisArray({commonAxes, mainAxes, id, result, styleObj}) {
@@ -142,4 +99,4 @@ function drawMainAxis(arrayShapes, sourceGroup, result) {
   return arr;
 }
 
-export { drawMainAxis, drawCommonAxis, createAxisArray, drawAxis, auxiliaryCalc };
+export { drawMainAxis, drawCommonAxis, createAxisArray, auxiliaryCalc };

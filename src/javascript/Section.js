@@ -17,8 +17,8 @@ class Section {
     const rotateSelectedId = calcRotateCoords(this.coords[shapeDataForCirclesMode.shapeId], this.centerX, this.centerY, this.degree);
     const requiredCoordObj = createCirclesInSvg.shapeCollectObj[clickedShape.uniqid][idCoordObj];
 
-    this.centerX = requiredCoordObj.x + (this.centerX - rotateSelectedId.rotateX);
-    this.centerY = requiredCoordObj.y + (this.centerY - rotateSelectedId.rotateY);
+    this.centerX = +(requiredCoordObj.x + (this.centerX - rotateSelectedId.rotateX)).toFixed(1);
+    this.centerY = +(requiredCoordObj.y + (this.centerY - rotateSelectedId.rotateY)).toFixed(1);
   }
 }
 
@@ -80,8 +80,8 @@ class UnequalAnglesCorner extends Section {
         ]
       : [
           {x: this.x0*10, y: this.B - this.y0*10},
-          {x: this.x0*10, y: -this.y0*10},
           {x: -this.b + this.x0*10, y: -this.y0*10},
+          {x: this.x0*10, y: -this.y0*10},
         ]
   }
 

@@ -15,8 +15,8 @@ export default function calcRotateCoords(item, relativeCenterX, relativeCenterY,
     degreeFromStartPoint = 360 - arctg;
   }
   const rotateDegree = degreeFromStartPoint - degree;
-  const rotateX = relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180);
-  const rotateY = relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180);
+  const rotateX = +(relativeCenterX + triangleHypotenuse*Math.cos(rotateDegree*Math.PI/180)).toFixed(1);
+  const rotateY = +(relativeCenterY + triangleHypotenuse*Math.sin(rotateDegree*Math.PI/180)).toFixed(1);
 
   return {rotateX , rotateY}
 }

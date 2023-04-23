@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 
 export default function SectionComposition({arrayShapes, setArrayShapes, setFuncForSwitchActiveSection}) {
   const [selectedId, setSelectedId] = useState(null);
@@ -11,6 +12,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
     unequalAnglesCorner: "Неравнополочный уголок",
     rectangle: "Прямоугольное сечение"
   }
+
   useEffect(() => {
     changeActiveSection();
 
@@ -92,11 +94,13 @@ function Section({ arrayShapes, shape, setArrayShapes }) {
   function changeSectionParams() {
     shape.centerX = +centerX;
     shape.centerY = +centerY;
-    shape.degree = +degree
+    shape.degree = +degree;
     const newArr = arrayShapes.map(elem => elem);
-    setArrayShapes(newArr)
-    setCenterX(shape.centerX)
-    setCenterY(shape.centerY)
+    setArrayShapes(newArr);
+    setCenterX(shape.centerX);
+    setCenterY(shape.centerY);
+
+    createCirclesInSvg(shape, 0, 0, shape.degree);
   }
 
   const increaseDegree = () => setDegree(degree + 90);

@@ -87,7 +87,8 @@ function InputingData({className, children, setResult, result}) {
               : <SectionComposition 
                   arrayShapes={arrayShapes} 
                   setArrayShapes={setArrayShapes}
-                  setFuncForSwitchActiveSection={setFuncForSwitchActiveSection} 
+                  setFuncForSwitchActiveSection={setFuncForSwitchActiveSection}
+                  sourceGroup={sourceGroup} 
                 />
             }
           </li>

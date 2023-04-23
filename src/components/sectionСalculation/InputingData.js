@@ -7,19 +7,23 @@ import StyledSourceGroup from "./SourceGroup";
 import StyledResultGroup from "./ResultGroup";
 import sectionsDataArr from "../../javascript/sectionsDataArr";
 import AddSection from "./AddSection";
+import { useDispatch } from "react-redux";
+import { changeMode } from "../../redux/pointsModeSlice";
+
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
   const sourceGroup = useRef(null);
   const [arrayShapes, setArrayShapes] = useState([]);
-  const [isPointsModeActive, setPointsMode] = useState(false);
   const [viewBox, setViewBox] = useState(`0 0 800 600`);
   const [showCoords, setShowMode] = useState(true);
   const [shapeDataForCirclesMode, setShapeDataForCirclesMode] = useState(null);
   const [funcForSwitchActiveSection, setFuncForSwitchActiveSection] = useState(null);
 
+  const dispatch = useDispatch()
+
   useEffect(() => {
-    setPointsMode(arrayShapes.length ? true : false);
+    dispatch(changeMode(arrayShapes.length ? true : false))
   }, [arrayShapes.length])
 
   const saveShape = (obj) => {
@@ -73,9 +77,9 @@ function InputingData({className, children, setResult, result}) {
 
             <ul style={{position: "relative"}}>
               {sectionsDataArr.map(sectionObj => (
-                <AddSection sectionObj={sectionObj} saveShape={saveShape} isPointsModeActive={isPointsModeActive} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
+                <AddSection sectionObj={sectionObj} saveShape={saveShape} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
               ))}
-              <AddRectangle saveShape={saveShape} isPointsModeActive={isPointsModeActive}/>
+              <AddRectangle saveShape={saveShape}/>
             </ul>
           </li>
 

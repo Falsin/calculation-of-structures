@@ -12,26 +12,31 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
   const sourceGroup = useRef(null);
   const shapesGroup = useRef(null);
   const objShapeData = useShapeDataForCirclesMode.getShapeData();
+  const [xLimits, setXLimits] = useState([0, 0]);
+  const [yLimits, setYLimits] = useState([0, 0]);
 
   useEffect(() => {
-    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
-  }, [arrayShapes.length])
-
-  useEffect(() => {
-    setLocalArrayShapes(drawShapesArray(shapesGroup, arrayShapes));
+    const { auxiliaryProps, sectionArr } = drawShapesArray(shapesGroup, arrayShapes);
+    setXLimits(auxiliaryProps.xLimits);
+    setYLimits(auxiliaryProps.yLimits);
+    setLocalArrayShapes(sectionArr);
   }, [arrayShapes])
 
   useEffect(() => {
+    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
     setScale(calcScale(shapesGroup));
     setViewBoxSize(shapesGroup.current);
+  }, [xLimits[0], xLimits[1], yLimits[0], yLimits[1]])
+
+  useEffect(() => {
     setArrayAxes(localArrayShapes.map((shape, id) => {
       return drawCommonAxis(shape, shapesGroup, id);
     }))
-  }, [localArrayShapes])
+  }, [scale])
 
   useEffect(() => {
     sourceGroup.current.setAttributeNS(null, "visibility", "visible");
-  }, [scale])
+  }, [arrayAxes])
 
   return <g ref={sourceGroup} className={className}>
     <g className="commonAxes">

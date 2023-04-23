@@ -15,16 +15,19 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
 
   useEffect(() => {
     sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
-    setLocalArrayShapes(drawShapesArray(shapesGroup, arrayShapes));
   }, [arrayShapes.length])
+
+  useEffect(() => {
+    setLocalArrayShapes(drawShapesArray(shapesGroup, arrayShapes));
+  }, [arrayShapes])
 
   useEffect(() => {
     setScale(calcScale(shapesGroup));
     setViewBoxSize(shapesGroup.current);
     setArrayAxes(localArrayShapes.map((shape, id) => {
-      return drawCommonAxis(shape, shapesGroup, scale, id);
+      return drawCommonAxis(shape, shapesGroup, id);
     }))
-  }, [localArrayShapes.length])
+  }, [localArrayShapes])
 
   useEffect(() => {
     sourceGroup.current.setAttributeNS(null, "visibility", "visible");
@@ -41,11 +44,11 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
 
     <g ref={shapesGroup} className="shapes">
       {localArrayShapes.map((shape, id) => {
+        const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid];
+
         return <g key={shape.uniqid} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}}>
             <path style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}} id={shape.uniqid} d={shape.d} className={shape.isActive ? "active" : ""} />
             {shape.coords.map((item, id) => {
-              const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid]
-
               return <>
                 <text
                   style={{visibility: showCoords ? "visible" : "hidden", transform: `scale(1, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX+item.x}px ${shape.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
@@ -77,8 +80,8 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
 
 const StyledSourceGroup = styled(SourceGroup)`
   .shapes {
-    & g,
-    & text {
+    g,
+    text {
       transition-property: transform;
       transition-duration: 1s;
       transition-timing-function: linear;
@@ -87,7 +90,7 @@ const StyledSourceGroup = styled(SourceGroup)`
     path {
       fill-opacity: 0;
 
-      &:active {
+      &.active {
         stroke: red;
       }
     }

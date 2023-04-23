@@ -99,6 +99,7 @@ class Rectangle extends Section {
       {x: this.b/2, y: -this.h/2},
       {x: -this.b/2, y: -this.h/2}
     ]
+    this.type = "rectangle";
   }
 
   createD() {

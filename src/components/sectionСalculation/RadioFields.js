@@ -1,9 +1,11 @@
 import React from "react";
 import uniqid from 'uniqid';
+import { useSelector } from "react-redux";
 
-export default function RadioFields({ drawShape, setBtnPointsStatus, isPointsModeActive, centerX, setCenterX, centerY, setCenterY }) {
+export default function RadioFields({ drawShape, setBtnPointsStatus, useCenterX, useCenterY }) {
   let id;
   const name = uniqid();
+  const isPointsModeActive = useSelector(state => state.pointsMode.value)
 
   return (
     <>
@@ -20,10 +22,10 @@ export default function RadioFields({ drawShape, setBtnPointsStatus, isPointsMod
 
         <div>
           <p>Координаты центра тяжести</p>
-          <label>x <input value={centerX} onChange={(e) => setCenterX(e.target.value)} /></label>
-          <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
+          <label>x <input value={useCenterX()} onChange={(e) => useCenterX(e.target.value)} /></label>
+          <label>y <input value={useCenterY()} onChange={(e) => useCenterY(e.target.value)} /></label>
               
-          <input type="button" value="Добавить" onClick={() => drawShape(centerX, centerY)} />
+          <input type="button" value="Добавить" onClick={() => drawShape(useCenterX(), useCenterY())} />
         </div>
       </div>
 

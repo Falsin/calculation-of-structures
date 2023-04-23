@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import createCirclesInSvg from "../../javascript/addCirclesToSVG";
+import drawShapesArray from "../../javascript/drawShapesArray";
 
-export default function SectionComposition({arrayShapes, setArrayShapes, setFuncForSwitchActiveSection}) {
+export default function SectionComposition({ sourceGroup, arrayShapes, setArrayShapes, setFuncForSwitchActiveSection }) {
   const [selectedId, setSelectedId] = useState(null);
   const headline = useRef(null);
 
@@ -68,7 +69,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
             <h3 ref={headline} className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>
               {sectionNames[shape.type]}
             </h3>
-            <Section arrayShapes={arrayShapes} shape={shape} setArrayShapes={setArrayShapes} />
+            <Section sourceGroup={sourceGroup} arrayShapes={arrayShapes} shape={shape} setArrayShapes={setArrayShapes} />
         </li>
         )
       })}
@@ -76,7 +77,7 @@ export default function SectionComposition({arrayShapes, setArrayShapes, setFunc
   )
 }
 
-function Section({ arrayShapes, shape, setArrayShapes }) {
+function Section({ sourceGroup, arrayShapes, shape, setArrayShapes }) {
   const [centerX, setCenterX] = useState(shape.centerX);
   const [centerY, setCenterY] = useState(shape.centerY);
   const [degree, setDegree] = useState(shape.degree);
@@ -95,12 +96,10 @@ function Section({ arrayShapes, shape, setArrayShapes }) {
     shape.centerX = +centerX;
     shape.centerY = +centerY;
     shape.degree = +degree;
-    const newArr = arrayShapes.map(elem => elem);
-    setArrayShapes(newArr);
+
+    setArrayShapes(drawShapesArray(sourceGroup, arrayShapes));
     setCenterX(shape.centerX);
     setCenterY(shape.centerY);
-
-    createCirclesInSvg(shape, 0, 0, shape.degree);
   }
 
   const increaseDegree = () => setDegree(degree + 90);

@@ -5,7 +5,7 @@ import { StyledSectionLi } from "./styledComponents";
 import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
 
-export default function AddSection({ sectionObj, useShapeDataForCirclesMode, saveShape, isPointsModeActive }) {
+export default function AddSection({ sectionObj, useShapeDataForCirclesMode, saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [shape, setShape] = useState(null);
@@ -52,6 +52,9 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode, sav
     setDegree(degree == 270 ? 0 : degree + 90);
   }
 
+  const useCenterX = param => param !== undefined ? setCenterX(param) : centerX;
+  const useCenterY = param => param !== undefined ? setCenterY(param) : centerY
+
   return (
     <StyledSectionLi>
       <h3 onClick={(e) => changeStatus(e)}>{sectionObj.sectionNameInRussian}</h3>
@@ -66,14 +69,10 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode, sav
         </select>
         
         <RadioFields
-          saveShape={saveShape} 
           drawShape={drawShape} 
-          isPointsModeActive={isPointsModeActive} 
-          setBtnPointsStatus={setBtnPointsStatus} 
-          centerX={centerX}
-          setCenterX={setCenterX}
-          centerY={centerY}
-          setCenterY={setCenterY}
+          setBtnPointsStatus={setBtnPointsStatus}
+          useCenterX={useCenterX}
+          useCenterY={useCenterY}
         />
 
         {!activeCase 

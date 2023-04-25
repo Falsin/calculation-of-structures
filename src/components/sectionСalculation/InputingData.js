@@ -1,15 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import AddRectangle from "./AddRectangle";
-import changeStatus from "../../javascript/changeStatusInList";
-import SectionComposition from "./SectionComposition";
 import StyledSourceGroup from "./SourceGroup";
 import StyledResultGroup from "./ResultGroup";
-import sectionsDataArr from "../../javascript/sectionsDataArr";
-import AddSection from "./AddSection";
 import { useDispatch } from "react-redux";
 import { changeMode } from "../../redux/pointsModeSlice";
-
+import StyledManageSections from "./ManageSections";
+import { SVG } from "./styledComponents";
 
 function InputingData({className, children, setResult, result}) {
   const svg = useRef(null);
@@ -18,7 +14,6 @@ function InputingData({className, children, setResult, result}) {
   const [viewBox, setViewBox] = useState(`0 0 800 600`);
   const [showCoords, setShowMode] = useState(true);
   const [shapeDataForCirclesMode, setShapeDataForCirclesMode] = useState(null);
-  const [funcForSwitchActiveSection, setFuncForSwitchActiveSection] = useState(null);
 
   const dispatch = useDispatch()
 
@@ -26,9 +21,7 @@ function InputingData({className, children, setResult, result}) {
     dispatch(changeMode(arrayShapes.length ? true : false))
   }, [arrayShapes.length])
 
-  const saveShape = (obj) => {
-    return obj ? setArrayShapes([...arrayShapes, obj]) : arrayShapes;
-  }
+  const saveShape = obj => obj ? setArrayShapes([...arrayShapes, obj]) : arrayShapes;
 
   async function submit(e) {
     e.preventDefault();
@@ -64,87 +57,48 @@ function InputingData({className, children, setResult, result}) {
   useShapeDataForCirclesMode.getShapeData = () => shapeDataForCirclesMode;
   useShapeDataForCirclesMode.changeShapeData = () => setShapeDataForCirclesMode(null);
 
+  const useSettingShowMode = () => setShowMode(!showCoords);
+  useSettingShowMode.showCoords = () => showCoords;
+
+  function showResultGroup() {
+    return !result 
+      ? null 
+      : <StyledResultGroup 
+          arrayShapes={arrayShapes} 
+          sourceGroup={sourceGroup} 
+          result={result} 
+        />
+  }
+
   return (
     <div className={className}>
       <SVG ref={svg} viewBox={viewBox}>
-        <StyledSourceGroup saveShape={saveShape} arrayShapes={arrayShapes} setViewBoxSize={setViewBoxSize} useShapeDataForCirclesMode={useShapeDataForCirclesMode} showCoords={showCoords} />
-        {!result ? null : <StyledResultGroup arrayShapes={arrayShapes} sourceGroup={sourceGroup} result={result} />}
+        <StyledSourceGroup 
+          saveShape={saveShape} 
+          arrayShapes={arrayShapes} 
+          setViewBoxSize={setViewBoxSize} 
+          useShapeDataForCirclesMode={useShapeDataForCirclesMode} 
+          showCoords={showCoords} 
+        />
+        
+        {showResultGroup()}
       </SVG>
-      <form onSubmit={submit}>
-        <ul style={{position: "relative"}}>
-          <li>
-            <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Простые сечения</h2>
-
-            <ul style={{position: "relative"}}>
-              {sectionsDataArr.map(sectionObj => (
-                <AddSection sectionObj={sectionObj} saveShape={saveShape} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
-              ))}
-              <AddRectangle saveShape={saveShape}/>
-            </ul>
-          </li>
-
-          <li>
-            <h2 onClick={(e) => changeStatus(e, funcForSwitchActiveSection)}>Состав сечения ({arrayShapes.length})</h2>
-
-            {!arrayShapes.length 
-              ? <p>Вы ещё не добавили ни одного сечения</p>
-              : <SectionComposition 
-                  arrayShapes={arrayShapes} 
-                  setArrayShapes={setArrayShapes}
-                  setFuncForSwitchActiveSection={setFuncForSwitchActiveSection}
-                  sourceGroup={sourceGroup} 
-                />
-            }
-          </li>
-        </ul>
-
-        {!arrayShapes.length 
-          ? null 
-          : <>
-            <button type="submit">рассчитать</button>
-            <button type="button" onClick={() => setShowMode(!showCoords)}>
-              {showCoords ? "Скрыть координаты" : "Показать координаты"}
-            </button>
-          </>
-        }
-      </form>
+      
+      <StyledManageSections 
+        submit={submit} 
+        saveShape={saveShape} 
+        useShapeDataForCirclesMode={useShapeDataForCirclesMode} 
+        useSettingShowMode={useSettingShowMode}
+        sourceGroup={sourceGroup}
+        arrayShapes={arrayShapes}
+        setArrayShapes={setArrayShapes} 
+      />
     </div>
   )
 }
 
 const StyledInputingData = styled(InputingData)`
   display: flex;
-
-  h2 {
-    margin: 0;
-  }
-
-  li > h2 ~ ul,
-  li > h3 ~ ul {
-    overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    transition-timing-function: linear;
-    transition: 1s;
-  }
-
-  li > h2.active ~ ul,
-  li > h3.active ~ ul {
-    max-height: 1000px;
-    margin-top: 10px;
-  }
-`
-
-const SVG = styled.svg`
-  width: 800px;
-  height: 600px;
-  border: 1px solid black;
-  transform: scale(1, -1);
-
-  & g {
-    width: inherit;
-    height: inherit;
-  }
 `
 
 export default StyledInputingData;

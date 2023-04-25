@@ -3,7 +3,6 @@ import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import { Rectangle } from "../../javascript/Section";
 
-
 export default function AddRectangle({ saveShape }) {
   const [h, setH] = useState(100);
   const [b, setB] = useState(50);

@@ -9,36 +9,40 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
   const [localArrayShapes, setLocalArrayShapes] = useState([]);
   const [scale, setScale] = useState(1);
   const [arrayAxes, setArrayAxes] = useState([])
-  const sourceGroup = useRef(null);
   const shapesGroup = useRef(null);
   const objShapeData = useShapeDataForCirclesMode.getShapeData();
   const [xLimits, setXLimits] = useState([0, 0]);
   const [yLimits, setYLimits] = useState([0, 0]);
+  const [isVisible, setVisibleStatus] = useState(false);
 
   useEffect(() => {
     const { auxiliaryProps, sectionArr } = drawShapesArray(shapesGroup, arrayShapes);
-    setXLimits(auxiliaryProps.xLimits);
-    setYLimits(auxiliaryProps.yLimits);
+    const checkXLimits = auxiliaryProps.xLimits.some((elem, id) => elem != xLimits[id]);
+    const checkYLimits = auxiliaryProps.yLimits.some((elem, id) => elem != yLimits[id]);
+
+    if (checkXLimits || checkYLimits) {
+      setVisibleStatus(false);
+      setXLimits(auxiliaryProps.xLimits);
+      setYLimits(auxiliaryProps.yLimits);
+    }
     setLocalArrayShapes(sectionArr);
   }, [arrayShapes])
 
   useEffect(() => {
-    sourceGroup.current.setAttributeNS(null, "visibility", "hidden");
     setScale(calcScale(shapesGroup));
     setViewBoxSize(shapesGroup.current);
-  }, [xLimits[0], xLimits[1], yLimits[0], yLimits[1]])
 
-  useEffect(() => {
     setArrayAxes(localArrayShapes.map((shape, id) => {
       return drawCommonAxis(shape, shapesGroup, id);
     }))
-  }, [scale])
+  }, [xLimits[0], xLimits[1], yLimits[0], yLimits[1]])
+
 
   useEffect(() => {
-    sourceGroup.current.setAttributeNS(null, "visibility", "visible");
+    setVisibleStatus(true);
   }, [arrayAxes])
 
-  return <g ref={sourceGroup} className={className}>
+  return <g className={className} style={{visibility: isVisible ? "visible" : "hidden"}}>
     <g className="commonAxes">
       {!arrayAxes.length ? null : arrayAxes.map((elem, id) => {
         return <g key={localArrayShapes[id].uniqid}>

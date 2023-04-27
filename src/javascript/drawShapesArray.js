@@ -7,7 +7,7 @@ export default function drawShapesArray(sourceGroup, arrayShapes) {
 
   const auxiliaryProps = auxiliaryCalc(arrayShapes, style);
 
-  return arrayShapes.map(shape => {
+  const sectionArr = arrayShapes.map(shape => {
     const relativeCenterX = auxiliaryProps.leftXLimit + (shape.centerX - auxiliaryProps.xLimits[0]);
     const relativeCenterY = auxiliaryProps.bottomYLimit + (shape.centerY - auxiliaryProps.yLimits[0]);
 
@@ -18,6 +18,8 @@ export default function drawShapesArray(sourceGroup, arrayShapes) {
 
     return shape;
   })
+
+  return { auxiliaryProps, sectionArr }
 }
 
 function auxiliaryCalc(arrayShapes, style) {

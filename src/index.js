@@ -5,6 +5,8 @@ import { MathJaxContext } from "better-react-mathjax";
 import store from "./redux/store";
 import { Provider } from "react-redux";
 
+import 'normalize.css'
+
 const root = createRoot(document.getElementById("root"))
 root.render(
   <Provider store={store}>

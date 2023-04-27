@@ -4,7 +4,6 @@ import { drawCommonAxis } from "../../javascript/drawShapesArray";
 import Axis from "./AxisComponent";
 import styled from "styled-components";
 import { Beam, Channel, EqualAnglesCorner, Rectangle, UnequalAnglesCorner } from "../../javascript/Section";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 
 function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive, className, children }) {
   const svg = useRef(null);
@@ -76,50 +75,69 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
     return { centerX, centerY }
   }
 
+  const points = !isBtnPointsActive 
+    ? null 
+    : sectionInstance.coords.map((coordObj, id) => (
+        <circle 
+          cx={sectionInstance.relativeCenterX+coordObj.x} 
+          cy={sectionInstance.relativeCenterY-coordObj.y}
+          onClick={() => setIdCoordInArray(id)}
+        />
+    ))
+
+  const drawing = !sectionInstance 
+    ? null
+    : <>
+        <g className="axes" style={{transformOrigin: `${width/2}px ${height/2}px`, transform: `scale(${activeCase == 2 ? -1 : 1}, 1)`}}>
+          {axesArr.map(axisObj => <Axis elem={axisObj} scale={1} />)}
+        </g>
+
+        <g className="shape" transform-origin={`${width/2} ${height/2}`} transform={`scale(${activeCase == 2 ? -1 : 1}, -1)`} >
+          <path ref={sectionPath} d={sectionInstance.d} />
+          {points}
+        </g>
+      </>
+
   return (
-    <svg className={className} ref={svg} style={{display: "block", maxHeight: "150px", transform: "scale(1, -1)"}}>
-      <g style={{transform: `rotate(${-deg}deg)`, transformOrigin: "50% 50%"}}>
-        {!sectionInstance 
-          ? null
-          : <>
-              <g style={{transformOrigin: `${width/2}px ${height/2}px`, transform: `scale(${activeCase == 2 ? -1 : 1}, 1)`}}>
-                {axesArr.map(axisObj => <Axis elem={axisObj} scale={1} />)}
-              </g>
-
-              <g className="shape" transform-origin={`${width/2} ${height/2}`} transform={`scale(${activeCase == 2 ? -1 : 1}, -1)`} >
-                <path ref={sectionPath} style={{fillOpacity: 0}} d={sectionInstance.d} stroke="black" />
-
-                {!isBtnPointsActive 
-                  ? null 
-                  : sectionInstance.coords.map((coordObj, id) => {
-                    return <circle 
-                      cx={sectionInstance.relativeCenterX+coordObj.x} 
-                      cy={sectionInstance.relativeCenterY-coordObj.y}
-                      r={4}
-                      fill="blue"
-                      onClick={() => setIdCoordInArray(id)}
-                      />
-                  })
-                }
-              </g>
-            </> 
-        }
-      </g>
+    <svg className={className} ref={svg}>
+      <g style={{transform: `rotate(${-deg}deg)`}}>{drawing}</g>
     </svg>
   )
 }
 
 const StyledPreview = styled(Preview)`
-  & > g g:first-child g:first-child path,
-  & > g g:first-child g:first-child marker  {
-    stroke: green;
-    fill: green;
-  }
+  display: block;
+  max-height: 150px;
+  transform: scale(1, -1);
 
-  & > g g:first-child g:nth-child(2) path,
-  & > g g:first-child g:nth-child(2) marker  {
-    stroke: red;
-    fill: red;
+  & > g {
+    transform-origin: 50% 50%;
+
+    .axes {
+      g:first-child path,
+      g:first-child marker {
+        stroke: green;
+        fill: green;
+      }
+
+      g:nth-child(2) path,
+      g:nth-child(2) marker {
+        stroke: red;
+        fill: red;
+      }
+    }
+
+    .shape {
+      path {
+        fill-opacity: 0;
+        stroke: black;
+      }
+
+      circle {
+        fill: blue;
+        r: 4;
+      }
+    }
   }
 
   * {

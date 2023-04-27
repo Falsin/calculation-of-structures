@@ -60,15 +60,13 @@ function InputingData({className, children, setResult, result}) {
   const useSettingShowMode = () => setShowMode(!showCoords);
   useSettingShowMode.showCoords = () => showCoords;
 
-  function showResultGroup() {
-    return !result 
-      ? null 
-      : <StyledResultGroup 
-          arrayShapes={arrayShapes} 
-          sourceGroup={sourceGroup} 
-          result={result} 
-        />
-  }
+  const resultGroup = !result 
+    ? null 
+    : <StyledResultGroup 
+        arrayShapes={arrayShapes} 
+        sourceGroup={sourceGroup} 
+        result={result} 
+      />
 
   return (
     <div className={className}>
@@ -81,7 +79,7 @@ function InputingData({className, children, setResult, result}) {
           showCoords={showCoords} 
         />
         
-        {showResultGroup()}
+        {resultGroup}
       </SVG>
       
       <StyledManageSections 

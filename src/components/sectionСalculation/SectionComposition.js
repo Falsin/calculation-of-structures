@@ -81,7 +81,7 @@ function SectionComposition({ sourceGroup, arrayShapes, setArrayShapes, useFuncF
 }
 
 const StyledSectionComposition = styled(SectionComposition)`
-  & > ul > li {
+  & > div > ul > li {
     border: solid 1px black;
   }
 `

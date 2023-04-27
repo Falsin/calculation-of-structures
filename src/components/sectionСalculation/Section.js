@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import drawShapesArray from "../../javascript/drawShapesArray";
+import styled from "styled-components";
 
-export default function Section({ sourceGroup, arrayShapes, shape, setArrayShapes }) {
+export default function Section({ sourceGroup, arrayShapes, shape, setArrayShapes, children, className }) {
   const [centerX, setCenterX] = useState(shape.centerX);
   const [centerY, setCenterY] = useState(shape.centerY);
   const [degree, setDegree] = useState(shape.degree);
@@ -33,28 +34,36 @@ export default function Section({ sourceGroup, arrayShapes, shape, setArrayShape
     setArrayShapes(filteredArray)
   }
 
+  const valueList = <ul>
+    {Object.entries(keysObj).map(([key, func]) => (
+      <li>
+        <label>{key}
+          {key != "degree" 
+            ? <input onChange={(e) => func(e.target.value)} defaultValue={shape[key]}/>
+            : <>
+                <input onChange={(e) => func(e.target.value)} value={degree/360%1*360} readOnly/>
+                <button type="button" onClick={() => increaseDegree()}>Повернуть на 90 градусов</button>
+              </>
+          } 
+        </label>
+      </li>
+    ))}
+  </ul>
+
   return (
-    <div>
-      <ul>
-        {Object.entries(keysObj).map(([key, func]) => (
-          <li>
-            <label style={{display: "block"}} >{key}
-              {key != "degree" 
-                ? <input onChange={(e) => func(e.target.value)} defaultValue={shape[key]}/>
-                : <>
-                    <input onChange={(e) => func(e.target.value)} value={degree/360%1*360} readOnly/>
-                    <button typeof="button" onClick={() => increaseDegree()} type="button">Повернуть на 90 градусов</button>
-                  </>
-              } 
-            </label>
-          </li>
-        ))}
-      </ul>
+    <div className={className}>
+      {valueList}
       
       <button type="button" onClick={() => deleteSection()}>Удалить</button>
-      <button onClick={() => changeSectionParams()} type="button" disabled={isSameValue()}>
+      <button type="button" onClick={() => changeSectionParams()} disabled={isSameValue()}>
         Изменить
       </button>
     </div>
   )
 }
+
+const StyledSection = styled(Section)`
+  label {
+    display: block;
+  }
+`

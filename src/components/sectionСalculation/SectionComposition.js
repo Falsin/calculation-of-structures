@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
-import drawShapesArray from "../../javascript/drawShapesArray";
+import styled from "styled-components";
+import changeStatus from "../../javascript/changeStatusInList";
+import Section from "./Section";
 
-export default function SectionComposition({ sourceGroup, arrayShapes, setArrayShapes, setFuncForSwitchActiveSection }) {
+function SectionComposition({ sourceGroup, arrayShapes, setArrayShapes, useFuncForSwitchActiveSection, children, className }) {
   const [selectedId, setSelectedId] = useState(null);
   const headline = useRef(null);
 
@@ -18,7 +19,7 @@ export default function SectionComposition({ sourceGroup, arrayShapes, setArrayS
     changeActiveSection();
 
     if (selectedId) {
-      setFuncForSwitchActiveSection(() => setSelectedId)
+      useFuncForSwitchActiveSection(() => setSelectedId)
     }
   }, [selectedId])
 
@@ -56,79 +57,33 @@ export default function SectionComposition({ sourceGroup, arrayShapes, setArrayS
     }
   }
 
+  const sectionList = <ul>
+    {arrayShapes.map(shape => (
+      <li 
+        onMouseEnter={(e) => setActiveSection(shape.uniqid, e.type)} 
+        onMouseLeave={(e) => setActiveSection(shape.uniqid, e.type)}
+        key={shape.uniqid}
+      >
+        <h3 ref={headline} className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>
+          {sectionNames[shape.type]}
+        </h3>
+        <Section sourceGroup={sourceGroup} arrayShapes={arrayShapes} shape={shape} setArrayShapes={setArrayShapes} />
+      </li>
+    ))}
+  </ul>
+
   return (
-    <ul>
-      {arrayShapes.map(shape => {
-        return (
-          <li 
-            style={{border: "solid 1px black"}} 
-            onMouseEnter={(e) => setActiveSection(shape.uniqid, e.type)} 
-            onMouseLeave={(e) => setActiveSection(shape.uniqid, e.type)}
-            key={shape.uniqid}
-          >
-            <h3 ref={headline} className={selectedId == shape.uniqid ? "active" : ""} onClick={() => setSelectedId(shape.uniqid == selectedId ? null : shape.uniqid)}>
-              {sectionNames[shape.type]}
-            </h3>
-            <Section sourceGroup={sourceGroup} arrayShapes={arrayShapes} shape={shape} setArrayShapes={setArrayShapes} />
-        </li>
-        )
-      })}
-    </ul>
+    <li className={className}>
+      <h2 onClick={(e) => changeStatus(e, useFuncForSwitchActiveSection())}>Состав сечения ({arrayShapes.length})</h2>
+      {!arrayShapes.length ? <p>Не добавлено ни одного сечения</p> : <div>{sectionList}</div>}
+    </li>
   )
 }
 
-function Section({ sourceGroup, arrayShapes, shape, setArrayShapes }) {
-  const [centerX, setCenterX] = useState(shape.centerX);
-  const [centerY, setCenterY] = useState(shape.centerY);
-  const [degree, setDegree] = useState(shape.degree);
-
-  const keysObj = {
-    centerX: (value) => setCenterX(value),
-    centerY: (value) => setCenterY(value),
-    degree: (value) => setDegree(value)
+const StyledSectionComposition = styled(SectionComposition)`
+  & > ul > li {
+    border: solid 1px black;
   }
+`
 
-  function isSameValue() {
-    return centerX == shape.centerX && centerY == shape.centerY && +degree/360%1*360 == shape.degree;
-  }
-
-  function changeSectionParams() {
-    shape.centerX = +centerX;
-    shape.centerY = +centerY;
-    shape.degree = +degree;
-
-    setArrayShapes(drawShapesArray(sourceGroup, arrayShapes).sectionArr);
-    setCenterX(shape.centerX);
-    setCenterY(shape.centerY);
-  }
-
-  const increaseDegree = () => setDegree(degree + 90);
-
-  function deleteSection() {
-    const filteredArray = arrayShapes.filter(section => section.uniqid != shape.uniqid);
-    setArrayShapes(filteredArray)
-  }
-
-  return (
-    <ul>
-      {Object.entries(keysObj).map(([key, func]) => (
-        <li>
-          <label style={{display: "block"}} >{key}
-            {key != "degree" 
-              ? <input onChange={(e) => func(e.target.value)} defaultValue={shape[key]}/>
-              : <>
-                  <input onChange={(e) => func(e.target.value)} value={degree/360%1*360} readOnly/>
-                  <button typeof="button" onClick={() => increaseDegree()} type="button">Повернуть на 90 градусов</button>
-                </>
-            } 
-          </label>
-        </li>
-      ))}
-
-      <button type="button" onClick={() => deleteSection()}>Удалить</button>
-      <button onClick={() => changeSectionParams()} type="button" disabled={isSameValue()}>
-        Изменить
-      </button>
-    </ul>
-  )
-}
+export { StyledSectionComposition };

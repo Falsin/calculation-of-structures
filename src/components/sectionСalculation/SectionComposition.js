@@ -97,7 +97,7 @@ function Section({ sourceGroup, arrayShapes, shape, setArrayShapes }) {
     shape.centerY = +centerY;
     shape.degree = +degree;
 
-    setArrayShapes(drawShapesArray(sourceGroup, arrayShapes));
+    setArrayShapes(drawShapesArray(sourceGroup, arrayShapes).sectionArr);
     setCenterX(shape.centerX);
     setCenterY(shape.centerY);
   }

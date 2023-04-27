@@ -6,12 +6,14 @@ import Axis from "./AxisComponent";
 
 function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
   const [scale, setScale] = useState(1);
-  const style = getComputedStyle(sourceGroup.current);
   const [visibility, setVisibility] = useState("hidden")
 
   const axesArray = drawMainAxis(arrayShapes, sourceGroup, result);
   const justResultAxes = axesArray.filter(elem => elem.axisName != "V" && elem.axisName != "U");
   const resultMainAxes = axesArray.filter(elem => elem.axisName == "V" || elem.axisName == "U");
+
+  const minXCoord = Math.min(...arrayShapes.map(obj => obj.relativeCenterX));
+  const minYCoord = Math.min(...arrayShapes.map(obj => obj.relativeCenterY));
 
   useEffect(() => {
     setScale(calcScale(sourceGroup))
@@ -25,10 +27,9 @@ function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
     <g>
       {justResultAxes.map(elem => <Axis elem={elem} scale={scale}/>)}
     </g>
-    <g style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`}} transform-origin={`${parseFloat(style.width)/2} ${parseFloat(style.height)/2}`} className="mainAxes">
+    <g style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`}} transform-origin={`${minXCoord+result.centerOfGravity.value.Xc} ${minYCoord+result.centerOfGravity.value.Yc}`}>
       {resultMainAxes.map(elem => <Axis elem={elem} scale={scale} result={result}/>)}
     </g>
-
   </g>
 }
 

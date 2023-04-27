@@ -53,32 +53,28 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode, sav
   const useCenterX = param => param !== undefined ? setCenterX(param) : centerX;
   const useCenterY = param => param !== undefined ? setCenterY(param) : centerY;
 
-  const sectionList = () => (
-    <select onChange={(e) => setShape(sections.find(section => section._id == e.target.value))}>
-      <option>Выберите № прокатной стали</option>
-      {sections.map(section => <option value={section._id} key={section._id}>{section.no}</option>)}
-    </select>
-  )
+  const sectionList = <select onChange={(e) => setShape(sections.find(section => section._id == e.target.value))}>
+    <option>Выберите № прокатной стали</option>
+    {sections.map(section => <option value={section._id} key={section._id}>{section.no}</option>)}
+  </select>
 
-  const setCase = () => {
-    return !activeCase 
-      ? null
-      : <>
-          <button type="button" className={`case ${activeCase == 1 ? "active" : ""}`} onClick={() => setActiveCase(1)}>1 случай</button>
-          <button type="button" className={`case ${activeCase == 2 ? "active" : ""}`} onClick={() => setActiveCase(2)}>2 случай</button>
-        </>
-  }
+  const setCase = !activeCase 
+    ? null
+    : <>
+        <button type="button" className={`case ${activeCase == 1 ? "active" : ""}`} onClick={() => setActiveCase(1)}>1 случай</button>
+        <button type="button" className={`case ${activeCase == 2 ? "active" : ""}`} onClick={() => setActiveCase(2)}>2 случай</button>
+      </>
 
   return (
     <StyledSectionLi>
       <h3 onClick={(e) => changeStatus(e)}>{sectionObj.sectionNameInRussian}</h3>
 
       <div>
-        {sectionList()}
+        {sectionList}
         
         <RadioFields drawShape={drawShape} setBtnPointsStatus={setBtnPointsStatus} useCenterX={useCenterX} useCenterY={useCenterY}/>
 
-        {setCase()}
+        {setCase}
 
         <button type="button" onClick={changeOrientation}>Повернуть на 90°</button>
 

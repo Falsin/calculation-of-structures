@@ -42,47 +42,57 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
     setVisibleStatus(true);
   }, [arrayAxes])
 
+  const axesList = !arrayAxes.length || !localArrayShapes.length ? null : arrayAxes.map((elem, id) => (
+      <g key={localArrayShapes[id].uniqid}>
+        {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={localArrayShapes}/>)}
+      </g>
+    ))
+
+  const createText = (shape, item, rotateCoordsArr, id) => (
+    <text
+      style={{visibility: showCoords ? "visible" : "hidden", transform: `scale(1, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX+item.x}px ${shape.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
+      x={shape.relativeCenterX + item.x}
+      y={shape.relativeCenterY + item.y}
+    >
+      {rotateCoordsArr[id].x}, {rotateCoordsArr[id].y}
+    </text>
+  )
+
+  const createCircles = (shape, item, id) => (
+    !objShapeData
+      ? null
+      : <circle onClick={() => {
+            objShapeData.shape.calcRelativeCenter(shape, id, objShapeData);
+            saveShape(objShapeData.shape);
+            useShapeDataForCirclesMode.changeShapeData();
+          }}
+          cx={shape.relativeCenterX + item.x} 
+          cy={shape.relativeCenterY + item.y} 
+          r="2" 
+        />
+  )
+
+  const shapeList = localArrayShapes.map(shape => {
+    const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid];
+
+    return <g key={shape.uniqid} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}}>
+      <path style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}} id={shape.uniqid} d={shape.d} className={shape.isActive ? "active" : ""} />
+      {shape.coords.map((item, id) => (
+        <>
+          {createText(shape, item, rotateCoordsArr, id)}
+          {createCircles(shape, item, id)}
+        </>
+      ))}
+    </g>
+  })
+
   return <g className={className} style={{visibility: isVisible ? "visible" : "hidden"}}>
     <g className="commonAxes">
-      {!arrayAxes.length ? null : arrayAxes.map((elem, id) => {
-        return <g key={localArrayShapes[id].uniqid}>
-          {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={localArrayShapes}/>)}
-        </g>
-      })}
+      {axesList}
     </g>
 
     <g ref={shapesGroup} className="shapes">
-      {localArrayShapes.map((shape, id) => {
-        const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid];
-
-        return <g key={shape.uniqid} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}}>
-            <path style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, transformOrigin: `${shape.relativeCenterX}px ${shape.relativeCenterY}px`}} id={shape.uniqid} d={shape.d} className={shape.isActive ? "active" : ""} />
-            {shape.coords.map((item, id) => {
-              return <>
-                <text
-                  style={{visibility: showCoords ? "visible" : "hidden", transform: `scale(1, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${shape.relativeCenterX+item.x}px ${shape.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
-                  x={shape.relativeCenterX + item.x}
-                  y={shape.relativeCenterY + item.y}
-                >
-                  {rotateCoordsArr[id].x}, {rotateCoordsArr[id].y}
-                </text>
-
-                {!objShapeData
-                  ? null
-                  : <circle onClick={() => {
-                    objShapeData.shape.calcRelativeCenter(shape, id, objShapeData);
-                    saveShape(objShapeData.shape);
-                    useShapeDataForCirclesMode.changeShapeData();
-                  }}
-                      cx={shape.relativeCenterX + item.x} 
-                      cy={shape.relativeCenterY + item.y} 
-                      r="2" 
-                    />
-                }
-              </>
-            })}
-        </g>
-      })}
+      {shapeList}
     </g>
   </g>
 }

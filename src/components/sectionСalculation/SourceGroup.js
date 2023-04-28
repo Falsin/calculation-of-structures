@@ -72,6 +72,51 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
         />
   )
 
+  const createDimensionalShapeLines = (shape) => {
+    const coordControlPointForWidth = {...shape.coords[0]};
+    coordControlPointForWidth.x += shape.relativeCenterX;
+    coordControlPointForWidth.y += shape.relativeCenterY;
+
+    const coordControlPointForHeight = {...shape.coords[shape.coords.length-1]};
+    coordControlPointForHeight.x += shape.relativeCenterX;
+    coordControlPointForHeight.y += shape.relativeCenterY;
+
+    let degree = shape.degree;
+
+    const width = createDimensionalLine(coordControlPointForWidth, shape.b, degree);
+    const height = createDimensionalLine(coordControlPointForHeight, shape.h, degree, "vertical");
+
+    return [width, height]
+  }
+
+  const createDimensionalLine = (coordObj, length, degree, orientation) => {
+    const { x, y } = coordObj;
+
+    if (degree/360%1*360 == 90 || degree/360%1*360 == 270) {
+      degree = (orientation == "vertical") ? degree -= 90 : degree += 90
+    }
+
+    return <g style={{transformOrigin: `${x}px ${y}px`, transform: `rotate(${(orientation == "vertical") ? "90deg" : "0"})`}}>
+      <path d={`M ${x-2} ${y+10} l ${length+4} ${0}`}/>
+
+      <path d={`M ${x} ${y+2} l ${0} ${10}`}/>
+      <path d={`M ${x+length} ${y+2} l ${0} ${10}`}/>
+
+      <path d={`M ${x} ${y+8} l ${0} ${4}`} style={{transform: `rotate(-45deg)`, transformOrigin: `${x}px ${y+10}px`}}/>
+      <path d={`M ${x+length} ${y+8} l ${0} ${4}`} style={{transform: `rotate(-45deg)`, transformOrigin: `${x+length}px ${y+10}px`}}/>
+
+      <g style={{transformOrigin: `${x+length/2}px ${y+10}px`, transform: `rotate(${degree}deg)`}}>
+        <text 
+          style={{fontSize: `${(16/scale)+2}px`, transform: `scale(1, -1)`, transformOrigin: `${x+length/2}px ${y+12}px`}}
+          x={x+length/2} 
+          y={y+12}
+        >
+          {length}
+        </text>
+      </g>
+    </g>
+  }
+
   const shapeList = localArrayShapes.map(shape => {
     const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.uniqid];
 
@@ -83,6 +128,7 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
           {createCircles(shape, item, id)}
         </>
       ))}
+      {createDimensionalShapeLines(shape).map(elem => elem)}
     </g>
   })
 

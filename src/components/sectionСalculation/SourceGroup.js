@@ -77,10 +77,12 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
     const coordControlPointForWidth = {...shape.coords[0]};
     coordControlPointForWidth.x += shape.relativeCenterX;
     coordControlPointForWidth.y += shape.relativeCenterY;
+    coordControlPointForWidth.length = shape.b;
 
     const coordControlPointForHeight = {...shape.coords[shape.coords.length-1]};
     coordControlPointForHeight.x += shape.relativeCenterX;
     coordControlPointForHeight.y += shape.relativeCenterY;
+    coordControlPointForHeight.length = shape.h || shape.B || shape.b;
 
     if (shape.activeCase == 2) {
       coordControlPointForWidth.x -= shape.b;
@@ -88,11 +90,10 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
     }
 
     const degree = shape.degree;
-    const shapeHeight = shape.h || shape.B || shape.b;
     const dimensionalLineHeight = 10;
 
-    const width = createDimensionalLine(coordControlPointForWidth, shape.b, degree, dimensionalLineHeight, scale);
-    const height = createDimensionalLine(coordControlPointForHeight, shapeHeight, degree, dimensionalLineHeight, scale, "vertical");
+    const width = createDimensionalLine(coordControlPointForWidth, degree, dimensionalLineHeight, scale);
+    const height = createDimensionalLine(coordControlPointForHeight, degree, dimensionalLineHeight, scale, "vertical");
 
     return [width, height]
   }

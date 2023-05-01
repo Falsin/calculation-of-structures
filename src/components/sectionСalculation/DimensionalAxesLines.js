@@ -8,13 +8,13 @@ export default function DimensionalAxesLines({ arrayShapes, justResultAxes, scal
   const horizontalDimensionalLines = horizontalDimensionalLinesData.map((elem, id) => {
     let heightHorizontalDimensionalLine = -(4 + Math.floor(id/2)*10);
 
-    return createDimensionalLine(elem, elem.length, 0, heightHorizontalDimensionalLine, scale)
+    return createDimensionalLine(elem, 0, heightHorizontalDimensionalLine, scale)
   })
 
   const verticalDimensionalLinesDatalLines = verticalDimensionalLinesData.map((elem, id) => {
     let heightVerticalDimensionalLine = 4 + Math.floor(id/2)*10;
 
-    return createDimensionalLine(elem, elem.length, 0, heightVerticalDimensionalLine, scale, "vertical")
+    return createDimensionalLine(elem, 0, heightVerticalDimensionalLine, scale, "vertical")
   })
 
   function createDimensionalLinesData() {
@@ -44,8 +44,7 @@ export default function DimensionalAxesLines({ arrayShapes, justResultAxes, scal
       }
     }, [])
 
-    dimensionalLinesData.sort((a, b) => a.length - b.length);
-    return dimensionalLinesData;
+    return dimensionalLinesData.sort((a, b) => a.length - b.length);
   }
 
   return <g>

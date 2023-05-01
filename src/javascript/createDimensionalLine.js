@@ -1,7 +1,7 @@
 import React from "react";
 
-export default function createDimensionalLine (coordObj, length, degree, height, scale ,orientation) {
-  const { x, y } = coordObj;
+export default function createDimensionalLine (coordObj, degree, height, scale ,orientation) {
+  const { x, y, length } = coordObj;
 
   if (degree/360%1*360 == 90 || degree/360%1*360 == 270) {
     degree = (orientation == "vertical") ? degree -= 90 : degree += 90

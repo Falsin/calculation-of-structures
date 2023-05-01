@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { drawMainAxis } from "../../javascript/drawShapesArray";
 import calcScale from "../../javascript/calcScale";
 import Axis from "./AxisComponent";
+import DimensionalAxesLines from "./DimensionalAxesLines";
 
 function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
   const [scale, setScale] = useState(1);
@@ -26,6 +27,7 @@ function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
   return <g style={{visibility: visibility}} className={className}>
     <g>
       {justResultAxes.map(elem => <Axis elem={elem} scale={scale}/>)}
+      <DimensionalAxesLines arrayShapes={arrayShapes} justResultAxes={justResultAxes} scale={scale} />
     </g>
     <g style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`}} transform-origin={`${minXCoord+result.centerOfGravity.value.Xc} ${minYCoord+result.centerOfGravity.value.Yc}`}>
       {resultMainAxes.map(elem => <Axis elem={elem} scale={scale} result={result}/>)}

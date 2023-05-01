@@ -91,8 +91,8 @@ function SourceGroup({saveShape, arrayShapes, setViewBoxSize, useShapeDataForCir
     const shapeHeight = shape.h || shape.B || shape.b;
     const dimensionalLineHeight = 10;
 
-    const width = createDimensionalLine(coordControlPointForWidth, shape.b, degree, dimensionalLineHeight);
-    const height = createDimensionalLine(coordControlPointForHeight, shapeHeight, degree, dimensionalLineHeight, "vertical");
+    const width = createDimensionalLine(coordControlPointForWidth, shape.b, degree, dimensionalLineHeight, scale);
+    const height = createDimensionalLine(coordControlPointForHeight, shapeHeight, degree, dimensionalLineHeight, scale, "vertical");
 
     return [width, height]
   }

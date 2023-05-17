@@ -15,9 +15,8 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
   const [sectionInstance, setSectionInstance] = useState(null)
   
   const section = useSelector(state => {
-    const sectionArr = state[sectionName][sectionName];
-    const reqElem = sectionArr.find(elem => (elem.h || elem.B || elem.b) >= 100);
-    return reqElem
+    const sectionObj = state[sectionName].entities;
+    return  Object.values(sectionObj).find(elem => (elem.h || elem.B || elem.b) >= 100);
   });
 
   const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;

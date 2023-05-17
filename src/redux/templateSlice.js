@@ -1,11 +1,12 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, createEntityAdapter } from "@reduxjs/toolkit";
+
+const shapeAdapter = createEntityAdapter({});
 
 export const shapeSlice = (shapeName, fetchFunc) => {
-  const initialState = { 
-    [shapeName]: [], 
+  const initialState = shapeAdapter.getInitialState({
     status: "idle",
     error: null 
-  }
+  })
 
   return createSlice({
     name: shapeName,
@@ -18,7 +19,7 @@ export const shapeSlice = (shapeName, fetchFunc) => {
         })
         .addCase(fetchFunc.fulfilled, (state, action) => {
           state.status = "succeeded";
-          state[shapeName] = JSON.parse(action.payload);
+          shapeAdapter.upsertMany(state, action.payload);
         })
         .addCase(fetchFunc.rejected, (state, action) => {
           state.status = "failed";
@@ -31,6 +32,7 @@ export const shapeSlice = (shapeName, fetchFunc) => {
 export const fetchShapes = (type, shape) => {
   return createAsyncThunk(type, async () => {
     const request = await fetch(`http://localhost:3000/sortament/${shape}/`);
-    return await request.json();
+    const response = await request.json();
+    return JSON.parse(response);
   })
 }

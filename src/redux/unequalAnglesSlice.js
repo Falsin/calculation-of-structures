@@ -4,6 +4,6 @@ export const fetchUnequalAnglesCorners = fetchShapes("unequalAnglesCorners/fetch
 
 const unequalAnglesSlice = shapeSlice("unequalAnglesCorners", fetchUnequalAnglesCorners);
 
-export const selectAllUnequalAnglesCorners = state => state.unequalAnglesCorners.unequalAnglesCorners;
+export const selectAllUnequalAnglesCorners = state => Object.values(state.unequalAnglesCorners.entities);
 
 export default unequalAnglesSlice.reducer;

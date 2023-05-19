@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
-import { Rectangle } from "../../javascript/Section";
+import { useDispatch } from "react-redux";
+import { addShape } from "../../redux/shapeCollectionSlice";
+import { createRectangle } from "../../javascript/sections/Sections";
 
 export default function AddRectangle({ saveShape }) {
   const [h, setH] = useState(100);
@@ -9,7 +11,9 @@ export default function AddRectangle({ saveShape }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
 
-  const drawShape = (centerX, centerY) => saveShape(new Rectangle(centerX, centerY, 0, {h, b}));
+  const dispatch = useDispatch();
+
+  const drawShape = (centerX, centerY) => dispatch(addShape(createRectangle(centerX, centerY, 0, {h, b})))
 
   return (
     <StyledSectionLi>

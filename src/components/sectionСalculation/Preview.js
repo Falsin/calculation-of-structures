@@ -3,9 +3,10 @@ import { useSelector } from "react-redux";
 import { drawCommonAxis } from "../../javascript/drawShapesArray";
 import Axis from "./AxisComponent";
 import styled from "styled-components";
-import { Beam, Channel, EqualAnglesCorner, Rectangle, UnequalAnglesCorner } from "../../javascript/Section";
+import { createBeam, createChannel, createEqualAnglesCorner, createUnequalAnglesCorner, createRectangle } from "../../javascript/sections/Sections"
+import { createD } from "../../javascript/sections/sectionsMethods";
 
-function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive, className, children }) {
+function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive, className }) {
   const svg = useRef(null);
   const sectionPath = useRef(null)
   const [width, setWidth] = useState(0);
@@ -19,14 +20,14 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
     return  Object.values(sectionObj).find(elem => (elem.h || elem.B || elem.b) >= 100);
   });
 
-  const {B, h, b, s, t, z0, x0, y0} = !section ? {} : section;
+  const {B, h, b, z0, x0, y0} = !section ? {} : section;
 
   const sectionsObj = {
-    beams: (centerX, centerY) => new Beam(centerX, centerY, deg, section),
-    channels: (centerX, centerY) => new Channel(centerX, centerY, deg, section),
-    equalAnglesCorners: (centerX, centerY) => new EqualAnglesCorner(centerX, centerY, deg, section),
-    unequalAnglesCorners: (centerX, centerY) => new UnequalAnglesCorner(centerX, centerY, deg, section, activeCase),
-    rectangles: (centerX, centerY) => new Rectangle(centerX, centerY, deg, section),
+    beams: (centerX, centerY) => createBeam(centerX, centerY, deg, section),
+    channels: (centerX, centerY) => createChannel(centerX, centerY, deg, section),
+    equalAnglesCorners: (centerX, centerY) => createEqualAnglesCorner(centerX, centerY, deg, section),
+    unequalAnglesCorners: (centerX, centerY) => createUnequalAnglesCorner(centerX, centerY, deg, section, activeCase),
+    rectangles: (centerX, centerY) => createRectangle(centerX, centerY, deg, section),
   }
 
   useEffect(() => {
@@ -48,8 +49,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
 
       sectionInstance.relativeCenterX = centerX;
       sectionInstance.relativeCenterY = centerY;
-      sectionInstance.createD();
- 
+
       setSectionInstance(sectionInstance)
     }
   }, [section])
@@ -92,7 +92,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
         </g>
 
         <g className="shape" transform-origin={`${width/2} ${height/2}`} transform={`scale(${activeCase == 2 ? -1 : 1}, -1)`} >
-          <path ref={sectionPath} d={sectionInstance.d} />
+          <path ref={sectionPath} d={createD.call(sectionInstance, sectionName)} />
           {points}
         </g>
       </>

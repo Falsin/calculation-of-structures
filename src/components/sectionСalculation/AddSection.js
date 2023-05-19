@@ -4,6 +4,7 @@ import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionLi } from "./styledComponents";
 import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
+import { addShape } from "../../redux/shapeCollectionSlice";
 
 export default function AddSection({ sectionObj, useShapeDataForCirclesMode, saveShape }) {
   const [centerX, setCenterX] = useState(0);
@@ -28,7 +29,7 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode, sav
   useEffect(() => {
     if (idCoordInArray !== null) {
       useShapeDataForCirclesMode({
-        shape: sectionObj.classShape(centerX, centerY, degree, shape, activeCase),
+        shape: sectionObj.shapeCreator(centerX, centerY, degree, shape, activeCase),
         shapeId: idCoordInArray
       })
     }
@@ -46,7 +47,9 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode, sav
     }
   }, [useShapeDataForCirclesMode.getShapeData])
 
-  const drawShape = (centerX, centerY) => saveShape(sectionObj.classShape(centerX, centerY, degree, shape, activeCase));
+  const drawShape = (centerX, centerY) => {
+    dispatch(addShape(sectionObj.shapeCreator(centerX, centerY, degree, shape, activeCase)))
+  };
 
   const changeOrientation = () => setDegree(degree == 270 ? 0 : degree + 90);
 

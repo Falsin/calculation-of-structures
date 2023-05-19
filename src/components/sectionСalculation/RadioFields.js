@@ -1,11 +1,22 @@
 import React from "react";
 import uniqid from 'uniqid';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllShapes } from "../../redux/shapeCollectionSlice";
+import { changeMode } from "../../redux/pointsModeSlice";
 
 export default function RadioFields({ drawShape, setBtnPointsStatus, useCenterX, useCenterY }) {
   let id;
   const name = uniqid();
-  const isPointsModeActive = useSelector(state => state.pointsMode.value)
+  const isPointsModeActive = useSelector(state => state.pointsMode.value);
+  const sections = useSelector(state => selectAllShapes(state));
+
+  const dispatch = useDispatch();
+
+  if (sections.length && !isPointsModeActive) {
+    dispatch(changeMode(true));
+  } else if (!sections.length && isPointsModeActive) {
+    dispatch(changeMode(false));
+  }
 
   return (
     <>

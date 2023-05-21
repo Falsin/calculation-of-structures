@@ -3,11 +3,15 @@ import styled from "styled-components";
 import AddRectangle from "./AddRectangle";
 import changeStatus from "../../javascript/changeStatusInList";
 import { StyledSectionComposition } from "./SectionComposition";
-import sectionsDataArr from "../../javascript/sectionsDataArr";
+import sectionsDataArr from "../../javascript/sections/sectionsDataArr";
 import AddSection from "./AddSection";
+import { useSelector } from "react-redux";
+import { selectAllShapes } from "../../redux/shapeCollectionSlice";
 
-function ManageSections({ submit, saveShape, useShapeDataForCirclesMode, useSettingShowMode, sourceGroup, arrayShapes, setArrayShapes, children, className }) {
+function ManageSections({ submit, useShapeDataForCirclesMode, useSettingShowMode, sourceGroup, className }) {
   const [funcForSwitchActiveSection, setFuncForSwitchActiveSection] = useState(null);
+  
+  const arrayShapes = useSelector(state => selectAllShapes(state));
 
   const useFuncForSwitchActiveSection = (func) => (
     func ? setFuncForSwitchActiveSection(func) : funcForSwitchActiveSection
@@ -24,9 +28,9 @@ function ManageSections({ submit, saveShape, useShapeDataForCirclesMode, useSett
 
   const sectionList = <ul>
     {sectionsDataArr.map(sectionObj => (
-      <AddSection sectionObj={sectionObj} saveShape={saveShape} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
+      <AddSection sectionObj={sectionObj} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
     ))}
-    <AddRectangle saveShape={saveShape}/>
+    <AddRectangle/>
   </ul>
 
   return (
@@ -38,8 +42,6 @@ function ManageSections({ submit, saveShape, useShapeDataForCirclesMode, useSett
         </li>
 
         <StyledSectionComposition 
-          arrayShapes={arrayShapes}
-          setArrayShapes={setArrayShapes}
           useFuncForSwitchActiveSection={useFuncForSwitchActiveSection}
           sourceGroup={sourceGroup} 
         />

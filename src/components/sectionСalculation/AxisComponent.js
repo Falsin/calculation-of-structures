@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import uniqid from 'uniqid';
 
 export default function Axis({elem, scale, result}) {

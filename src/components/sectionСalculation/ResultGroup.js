@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { drawMainAxis } from "../../javascript/drawShapesArray";
+import drawShapesArray, { drawMainAxis } from "../../javascript/drawShapesArray";
 import calcScale from "../../javascript/calcScale";
 import Axis from "./AxisComponent";
 import DimensionalAxesLines from "./DimensionalAxesLines";
 
-function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
+function ResultGroup({className, arrayShapes, sourceGroup, result}) {
   const [scale, setScale] = useState(1);
   const [visibility, setVisibility] = useState("hidden")
 
@@ -13,8 +13,7 @@ function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
   const justResultAxes = axesArray.filter(elem => elem.axisName != "V" && elem.axisName != "U");
   const resultMainAxes = axesArray.filter(elem => elem.axisName == "V" || elem.axisName == "U");
 
-  const minXCoord = Math.min(...arrayShapes.map(obj => obj.relativeCenterX));
-  const minYCoord = Math.min(...arrayShapes.map(obj => obj.relativeCenterY));
+  const startCoords = drawShapesArray(sourceGroup, arrayShapes).auxiliaryProps;
 
   useEffect(() => {
     setScale(calcScale(sourceGroup))
@@ -29,7 +28,8 @@ function ResultGroup({className, children, arrayShapes, sourceGroup, result}) {
       {justResultAxes.map(elem => <Axis elem={elem} scale={scale}/>)}
       <DimensionalAxesLines arrayShapes={arrayShapes} justResultAxes={justResultAxes} scale={scale} />
     </g>
-    <g style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`}} transform-origin={`${minXCoord+result.centerOfGravity.value.Xc} ${minYCoord+result.centerOfGravity.value.Yc}`}>
+    <g style={{transform: `rotate(${!result ? 0 : -result.degree.value}deg)`}} 
+      transform-origin={`${startCoords.leftXLimit+result.centerOfGravity.value.Xc} ${startCoords.bottomYLimit+result.centerOfGravity.value.Yc}`}>
       {resultMainAxes.map(elem => <Axis elem={elem} scale={scale} result={result}/>)}
     </g>
   </g>

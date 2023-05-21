@@ -2,26 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import StyledSourceGroup from "./SourceGroup";
 import StyledResultGroup from "./ResultGroup";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { changeMode } from "../../redux/pointsModeSlice";
 import StyledManageSections from "./ManageSections";
 import { SVG } from "./styledComponents";
+import { selectAllShapes } from "../../redux/shapeCollectionSlice";
 
-function InputingData({className, children, setResult, result}) {
+function InputingData({className, setResult, result}) {
   const svg = useRef(null);
   const sourceGroup = useRef(null);
-  const [arrayShapes, setArrayShapes] = useState([]);
   const [viewBox, setViewBox] = useState(`0 0 800 600`);
   const [showCoords, setShowMode] = useState(true);
   const [shapeDataForCirclesMode, setShapeDataForCirclesMode] = useState(null);
+
+  const arrayShapes = useSelector(state => selectAllShapes(state))
 
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(changeMode(arrayShapes.length ? true : false))
   }, [arrayShapes.length])
-
-  const saveShape = obj => obj ? setArrayShapes([...arrayShapes, obj]) : arrayShapes;
 
   async function submit(e) {
     e.preventDefault();
@@ -72,8 +72,6 @@ function InputingData({className, children, setResult, result}) {
     <div className={className}>
       <SVG ref={svg} viewBox={viewBox}>
         <StyledSourceGroup 
-          saveShape={saveShape} 
-          arrayShapes={arrayShapes} 
           setViewBoxSize={setViewBoxSize} 
           useShapeDataForCirclesMode={useShapeDataForCirclesMode} 
           showCoords={showCoords} 
@@ -84,12 +82,9 @@ function InputingData({className, children, setResult, result}) {
       
       <StyledManageSections 
         submit={submit} 
-        saveShape={saveShape} 
         useShapeDataForCirclesMode={useShapeDataForCirclesMode} 
         useSettingShowMode={useSettingShowMode}
         sourceGroup={sourceGroup}
-        arrayShapes={arrayShapes}
-        setArrayShapes={setArrayShapes} 
       />
     </div>
   )

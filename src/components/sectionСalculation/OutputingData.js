@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { MathJax } from "better-react-mathjax";
 
-function OutputingData({result, className, children}) {
+function OutputingData({result, className}) {
   const centerOfGravity = <li>
     <p>Найдем координаты центра тяжести сложного сечения:</p>
     <div>{result.centerOfGravity.mathStringX}</div>

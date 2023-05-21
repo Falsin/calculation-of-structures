@@ -4,6 +4,8 @@ import channelsReducer from "./channelsSlice";
 import equalAnglesCornersReducer from "./equalAngleCornerSlice";
 import unequalAnglesCornersReducer from "./unequalAnglesSlice";
 import pointsModeReducer from "./pointsModeSlice";
+import shapeCollectionReducer from "./shapeCollectionSlice";
+
 
 export default configureStore({
   reducer: {
@@ -11,6 +13,7 @@ export default configureStore({
     channels: channelsReducer,
     equalAnglesCorners: equalAnglesCornersReducer,
     unequalAnglesCorners: unequalAnglesCornersReducer,
-    pointsMode: pointsModeReducer
+    pointsMode: pointsModeReducer,
+    shapeCollection: shapeCollectionReducer
   },
 })

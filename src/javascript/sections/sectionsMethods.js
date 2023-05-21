@@ -3,7 +3,7 @@ import calcRotateCoords from "../calcRotateCoords";
 
 function calcRelativeCenter (clickedShape, idCoordObj, shapeDataForCirclesMode) {
   const rotateSelectedId = calcRotateCoords(this.coords[shapeDataForCirclesMode.shapeId], this.centerX, this.centerY, this.degree);
-  const requiredCoordObj = createCirclesInSvg.shapeCollectObj[clickedShape.uniqid][idCoordObj];
+  const requiredCoordObj = createCirclesInSvg.shapeCollectObj[clickedShape.id][idCoordObj];
 
   return {
     centerX: +(requiredCoordObj.x + (this.centerX - rotateSelectedId.rotateX)).toFixed(1),

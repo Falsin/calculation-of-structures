@@ -3,15 +3,12 @@ import styled from "styled-components";
 import calcScale from "../../javascript/calcScale";
 import drawShapesArray, { drawCommonAxis } from "../../javascript/drawShapesArray";
 import Axis from "./AxisComponent";
-import createCirclesInSvg from "../../javascript/addCirclesToSVG";
-import createDimensionalLine from "../../javascript/createDimensionalLine";
-import { calcRelativeCenter, createD } from "../../javascript/sections/sectionsMethods";
 
-import { addShape, selectAllShapes, selectSpecificShape } from "../../redux/shapeCollectionSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { selectAllShapes } from "../../redux/shapeCollectionSlice";
+import { useSelector } from "react-redux";
+import ShapeComponent from "./ShapeForSourceGroup";
 
 function SourceGroup({setViewBoxSize, useShapeDataForCirclesMode, showCoords, className}) {
-  const [localArrayShapes, setLocalArrayShapes] = useState([]);
   const [scale, setScale] = useState(1);
   const [arrayAxes, setArrayAxes] = useState([])
   const shapesGroup = useRef(null);
@@ -38,24 +35,25 @@ function SourceGroup({setViewBoxSize, useShapeDataForCirclesMode, showCoords, cl
 
       return sectionArr;
     }
+    return [];
   }
 
   useEffect(() => {
     setScale(calcScale(shapesGroup));
     setViewBoxSize(shapesGroup.current);
 
-    setArrayAxes(localArrayShapes.map((shape, id) => {
-      return drawCommonAxis(shape, shapesGroup, id);
-    }))
+    setArrayAxes(coordsArr.map((shape, id) => 
+      drawCommonAxis(shape, shapesGroup, id)
+    ))
   }, [xLimits[0], xLimits[1], yLimits[0], yLimits[1]])
 
   useEffect(() => {
     setVisibleStatus(true);
-  }, [arrayAxes])
+  }, [scale])
 
-  const axesList = !arrayAxes.length || !localArrayShapes.length ? null : arrayAxes.map((elem, id) => (
-      <g key={localArrayShapes[id].uniqid}>
-        {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={localArrayShapes}/>)}
+  const axesList = !arrayAxes.length || !arrayShapes.length ? null : arrayAxes.map((elem, id) => (
+      <g key={arrayShapes[id].uniqid}>
+        {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={arrayShapes}/>)}
       </g>
     ))
 
@@ -72,87 +70,6 @@ function SourceGroup({setViewBoxSize, useShapeDataForCirclesMode, showCoords, cl
       {shapeList}
     </g>
   </g>
-}
-
-function ShapeComponent({ coordObj, showCoords, scale, useShapeDataForCirclesMode }) {
-  const shape = useSelector(state => selectSpecificShape(state, coordObj.id));
-  const dispatch = useDispatch();
-
-  const objShapeData = useShapeDataForCirclesMode.getShapeData();
-
-  const rotateCoordsArr = createCirclesInSvg.shapeCollectObj[shape.id];
-
-  const createText = (item, rotateCoordsArr, id) => (
-    <text
-      style={{visibility: showCoords ? "visible" : "hidden", transform: `scale(1, -1) rotate(${-shape.degree}deg)`, transformOrigin: `${coordObj.relativeCenterX+item.x}px ${coordObj.relativeCenterY+item.y}px`, fontSize: `${(16/scale)+2}px`}}
-      x={coordObj.relativeCenterX + item.x}
-      y={coordObj.relativeCenterY + item.y}
-    >
-      {rotateCoordsArr[id].x}, {rotateCoordsArr[id].y}
-    </text>
-  )
-
-  const createCircles = (item, id) => (
-    !objShapeData
-      ? null
-      : <circle onClick={() => {
-            const relativeCenter = calcRelativeCenter.call(objShapeData.shape, shape, id, objShapeData);
-            objShapeData.shape.centerX = relativeCenter.centerX,
-            objShapeData.shape.centerY = relativeCenter.centerY
-
-            dispatch(addShape({
-              ...shape,
-              ...Object.assign(objShapeData.shape, relativeCenter)
-            }))
-
-            useShapeDataForCirclesMode.changeShapeData();
-          }}
-          cx={coordObj.relativeCenterX + item.x} 
-          cy={coordObj.relativeCenterY + item.y} 
-          r="2" 
-        />
-  )
-
-  const createDimensionalShapeLines = (shape) => {
-    const coordControlPointForWidth = {...shape.coords[0]};
-    coordControlPointForWidth.x += coordObj.relativeCenterX;
-    coordControlPointForWidth.y += coordObj.relativeCenterY;
-    coordControlPointForWidth.length = shape.b;
-
-    const coordControlPointForHeight = {...shape.coords[shape.coords.length-1]};
-    coordControlPointForHeight.x += coordObj.relativeCenterX;
-    coordControlPointForHeight.y += coordObj.relativeCenterY;
-    coordControlPointForHeight.length = shape.h || shape.B || shape.b;
-
-    if (shape.activeCase == 2) {
-      coordControlPointForWidth.x -= shape.b;
-      coordControlPointForHeight.x -= shape.b;
-    }
-
-    const degree = shape.degree;
-    const dimensionalLineHeight = 10;
-
-    const width = createDimensionalLine(coordControlPointForWidth, degree, dimensionalLineHeight, scale);
-    const height = createDimensionalLine(coordControlPointForHeight, degree, dimensionalLineHeight, scale, "vertical");
-
-    return [width, height]
-  }
-
-  return <g key={shape.id} style={{transform: `rotate(${-shape.degree}deg)`, transformOrigin: `${coordObj.relativeCenterX}px ${coordObj.relativeCenterY}px`}}>
-      <path 
-        style={{transform: `scale(${shape.activeCase == 2 ? -1 : 1}, -1)`, 
-        transformOrigin: `${coordObj.relativeCenterX}px ${coordObj.relativeCenterY}px`}} 
-        id={shape.id} 
-        d={createD.call(Object.assign({}, shape, coordObj))} 
-        className={shape.isActive ? "active" : ""} />
-      {shape.coords.map((item, id) => (
-        <>
-          {createText(item, rotateCoordsArr, id)}
-          {createCircles(item, id)}
-        </>
-      ))}
-      {createDimensionalShapeLines(shape).map(elem => elem)}
-    </g>
 }
 
 const StyledSourceGroup = styled(SourceGroup)`

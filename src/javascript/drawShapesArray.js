@@ -11,12 +11,13 @@ export default function drawShapesArray(sourceGroup, arrayShapes) {
     const relativeCenterX = auxiliaryProps.leftXLimit + (shape.centerX - auxiliaryProps.xLimits[0]);
     const relativeCenterY = auxiliaryProps.bottomYLimit + (shape.centerY - auxiliaryProps.yLimits[0]);
 
-    shape.relativeCenterX = relativeCenterX;
-    shape.relativeCenterY = relativeCenterY;
-    shape.createD();
     createCirclesInSvg(shape);
 
-    return shape;
+    return {
+      id: shape.id,
+      relativeCenterX,
+      relativeCenterY
+    }
   })
 
   return { auxiliaryProps, sectionArr }

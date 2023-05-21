@@ -6,7 +6,7 @@ import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
 import { addShape } from "../../redux/shapeCollectionSlice";
 
-export default function AddSection({ sectionObj, useShapeDataForCirclesMode, saveShape }) {
+export default function AddSection({ sectionObj, useShapeDataForCirclesMode }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [shape, setShape] = useState(null);

@@ -29,19 +29,19 @@ export default function DimensionalAxesLines({ arrayShapes, justResultAxes, scal
 
   function createDataArr({ x, y, coordsYc, coordsXc, orientation }) {
     const dimensionalLinesData = arrayShapes.reduce((prev, curr) => {
-    const length = !orientation 
-      ? +(Math.max(curr.relativeCenterX, coordsYc.x1) - Math.min(curr.relativeCenterX, coordsYc.x1)).toFixed(2)
-      : +(Math.max(curr.relativeCenterY, coordsXc.y1) - Math.min(curr.relativeCenterY, coordsXc.y1)).toFixed(2);
+      const length = !orientation 
+        ? +(Math.max(curr.relativeCenterX, coordsYc.x1) - Math.min(curr.relativeCenterX, coordsYc.x1)).toFixed(2)
+        : +(Math.max(curr.relativeCenterY, coordsXc.y1) - Math.min(curr.relativeCenterY, coordsXc.y1)).toFixed(2);
 
-      if (length > 0) {
-        return [...prev, {
-          x: x ? x : Math.min(curr.relativeCenterX, coordsYc.x1),
-          y: y ? y : Math.min(curr.relativeCenterY, coordsXc.y1),
-          length: length
-        }]
-      } else {
-        return prev;
-      }
+        if (length > 0) {
+          return [...prev, {
+            x: x ? x : Math.min(curr.relativeCenterX, coordsYc.x1),
+            y: y ? y : Math.min(curr.relativeCenterY, coordsXc.y1),
+            length: length
+          }]
+        } else {
+          return prev;
+        }
     }, [])
 
     return dimensionalLinesData.sort((a, b) => a.length - b.length);

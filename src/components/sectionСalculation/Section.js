@@ -75,7 +75,7 @@ export default function Section({ shapeId, useSelectedId }) {
   }
 
   const valueList = <ul>
-    {Object.entries(keysObj).map(([key, func]) => (
+    {Object.entries(keysObj).map(([key, func]) => 
       <li>
         <label>{key}
           {key != "degree" 
@@ -87,7 +87,7 @@ export default function Section({ shapeId, useSelectedId }) {
           } 
         </label>
       </li>
-    ))}
+    )}
   </ul>
 
   return (

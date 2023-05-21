@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from "@reduxjs/toolkit";
 
-const shapeAdapter = createEntityAdapter({});
+const shapeAdapter = createEntityAdapter();
 
 export const shapeSlice = (shapeName, fetchFunc) => {
   const initialState = shapeAdapter.getInitialState({

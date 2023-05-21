@@ -1,11 +1,51 @@
-import React, { useState } from "react";
-import drawShapesArray from "../../javascript/drawShapesArray";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
+import { selectSpecificShape, updateShape, removeShape } from "../../redux/shapeCollectionSlice";
 
-export default function Section({ sourceGroup, arrayShapes, shape, setArrayShapes, children, className }) {
+export default function Section({ shapeId, useSelectedId }) {
+  const shape = useSelector(state => selectSpecificShape(state, shapeId));
+
   const [centerX, setCenterX] = useState(shape.centerX);
   const [centerY, setCenterY] = useState(shape.centerY);
   const [degree, setDegree] = useState(shape.degree);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (useSelectedId.getSelectedId != shapeId && shape.isActive) {
+      changeShapeActiveStatus(false);
+    } else if (useSelectedId.getSelectedId == shapeId && !shape.isActive) {
+      changeShapeActiveStatus(true);
+    }
+  }, [useSelectedId.getSelectedId])
+
+  const setActiveShape = (eventType) => {
+    if (!useSelectedId.getSelectedId) {
+      if (eventType == "mouseleave") {
+        changeShapeActiveStatus(false);
+      } else {
+        changeShapeActiveStatus(true);
+      }
+    }
+  }
+
+  const changeShapeActiveStatus = (activeStatus) => {
+    dispatch(updateShape({
+      id: shapeId,
+      changes: {
+        isActive: activeStatus
+      }
+    }))
+  }
+
+  const sectionNames = {
+    beam: "Двутавр",
+    channel: "Швеллер",
+    equalAnglesCorner: "Равнополочный уголок",
+    unequalAnglesCorner: "Неравнополочный уголок",
+    rectangle: "Прямоугольное сечение"
+  }
 
   const keysObj = {
     centerX: (value) => setCenterX(value),
@@ -18,20 +58,20 @@ export default function Section({ sourceGroup, arrayShapes, shape, setArrayShape
   }
 
   function changeSectionParams() {
-    shape.centerX = +centerX;
-    shape.centerY = +centerY;
-    shape.degree = +degree;
-
-    setArrayShapes(drawShapesArray(sourceGroup, arrayShapes).sectionArr);
-    setCenterX(shape.centerX);
-    setCenterY(shape.centerY);
+    dispatch(updateShape({
+      id: shapeId,
+      changes: {
+        centerX: +centerX,
+        centerY: +centerY,
+        degree: +degree
+      }
+    }))
   }
 
   const increaseDegree = () => setDegree(degree + 90);
 
   function deleteSection() {
-    const filteredArray = arrayShapes.filter(section => section.uniqid != shape.uniqid);
-    setArrayShapes(filteredArray)
+    dispatch(removeShape(shapeId))
   }
 
   const valueList = <ul>
@@ -51,14 +91,20 @@ export default function Section({ sourceGroup, arrayShapes, shape, setArrayShape
   </ul>
 
   return (
-    <div className={className}>
-      {valueList}
-      
-      <button type="button" onClick={() => deleteSection()}>Удалить</button>
-      <button type="button" onClick={() => changeSectionParams()} disabled={isSameValue()}>
-        Изменить
-      </button>
-    </div>
+    <li onMouseEnter={(e) => setActiveShape(e.type)} onMouseLeave={(e) => setActiveShape(e.type)}>
+      <h3 onClick={() => useSelectedId(shapeId)} className={useSelectedId.getSelectedId == shapeId ? "active" : ""}>
+        {sectionNames[shape.type]}
+      </h3>
+
+      <div>
+        {valueList}
+        
+        <button type="button" onClick={() => deleteSection()}>Удалить</button>
+        <button type="button" onClick={() => changeSectionParams()} disabled={isSameValue()}>
+          Изменить
+        </button>
+      </div>
+    </li>
   )
 }
 

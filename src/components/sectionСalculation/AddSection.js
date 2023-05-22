@@ -6,7 +6,7 @@ import StyledPreview from "./Preview";
 import RadioFields from "./RadioFields";
 import { addShape } from "../../redux/shapeCollectionSlice";
 
-export default function AddSection({ sectionObj, useShapeDataForCirclesMode }) {
+export default React.memo(function AddSection({ sectionObj, useShapeDataForCirclesMode }) {
   const [centerX, setCenterX] = useState(0);
   const [centerY, setCenterY] = useState(0);
   const [shape, setShape] = useState(null);
@@ -91,4 +91,6 @@ export default function AddSection({ sectionObj, useShapeDataForCirclesMode }) {
       </div>
     </StyledSectionLi>
   )
-}
+}, (prevProps, nextProps) => {
+  return prevProps.sectionObj.sectionName == nextProps.sectionObj.sectionName;
+})

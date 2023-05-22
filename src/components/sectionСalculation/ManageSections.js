@@ -28,7 +28,7 @@ function ManageSections({ submit, useShapeDataForCirclesMode, useSettingShowMode
 
   const sectionList = <ul>
     {sectionsDataArr.map(sectionObj => (
-      <AddSection sectionObj={sectionObj} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
+      <AddSection key={sectionObj.sectionName} sectionObj={sectionObj} useShapeDataForCirclesMode={useShapeDataForCirclesMode}/>
     ))}
     <AddRectangle/>
   </ul>

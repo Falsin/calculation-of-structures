@@ -14,9 +14,6 @@ export const shapeSlice = (shapeName, fetchFunc) => {
     reducers: {},
     extraReducers: (builder) => {
       builder
-        .addCase(fetchFunc.pending, (state) => {
-          state.status = "loading";
-        })
         .addCase(fetchFunc.fulfilled, (state, action) => {
           state.status = "succeeded";
           shapeAdapter.upsertMany(state, action.payload);

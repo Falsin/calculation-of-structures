@@ -6,7 +6,7 @@ import createCirclesInSvg from "../../javascript/addCirclesToSVG";
 import createDimensionalLine from "../../javascript/createDimensionalLine";
 import { calcRelativeCenter, createD } from "../../javascript/sections/sectionsMethods";
 
-export default function ShapeComponent({ coordObj, showCoords, scale, useShapeDataForCirclesMode }) {
+export default React.memo(function ShapeComponent({ coordObj, showCoords, scale, useShapeDataForCirclesMode }) {
   const shape = useSelector(state => selectSpecificShape(state, coordObj.id));
   const dispatch = useDispatch();
 
@@ -85,4 +85,19 @@ export default function ShapeComponent({ coordObj, showCoords, scale, useShapeDa
       ))}
       {createDimensionalShapeLines(shape).map(elem => elem)}
     </g>
+}, (prevProps, nextProps) => {
+
+  return recCompare(prevProps, nextProps)
+})
+
+function recCompare(prevProps, nextProps) {
+  if (typeof prevProps !== "object" && typeof prevProps !== "function") {
+    return prevProps == nextProps;
+  } else if (typeof prevProps == "object") {
+    const conditionArray = Object.entries(prevProps).reduce((prev, [key, val]) => 
+      [...prev, recCompare(val, nextProps[key])], []);
+    return conditionArray.every(item => item == true);
+  } else {
+    return true;
+  }
 }

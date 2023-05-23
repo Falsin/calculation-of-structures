@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { addShape } from "../../redux/shapeCollectionSlice";
 import { createRectangle } from "../../javascript/sections/Sections";
 
-export default function AddRectangle({ saveShape }) {
+export default React.memo(function AddRectangle() {
   const [h, setH] = useState(100);
   const [b, setB] = useState(50);
   const [centerX, setCenterX] = useState(0);
@@ -32,8 +32,8 @@ export default function AddRectangle({ saveShape }) {
           <label>y <input value={centerY} onChange={(e) => setCenterY(e.target.value)} /></label>
         </div>
 
-        <input type="button" value="Добавить" onClick={() => saveShape(drawShape(centerX, centerY))} />
+        <input type="button" value="Добавить" onClick={() => drawShape(centerX, centerY)} />
       </div>
     </StyledSectionLi>
   )
-}
+})

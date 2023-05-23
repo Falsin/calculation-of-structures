@@ -5,6 +5,7 @@ import Axis from "./AxisComponent";
 import styled from "styled-components";
 import { createBeam, createChannel, createEqualAnglesCorner, createUnequalAnglesCorner, createRectangle } from "../../javascript/sections/Sections"
 import { createD } from "../../javascript/sections/sectionsMethods";
+import { getSpecificSection } from "../../redux/templateSlice";
 
 function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPointsActive, className }) {
   const svg = useRef(null);
@@ -13,12 +14,9 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
   const [height, setHeight] = useState(0);
   const [deg, setDeg] = useState(degree);
   const [axesArr, setAxesArr] = useState([]);
-  const [sectionInstance, setSectionInstance] = useState(null)
-  
-  const section = useSelector(state => {
-    const sectionObj = state[sectionName].entities;
-    return  Object.values(sectionObj).find(elem => (elem.h || elem.B || elem.b) >= 100);
-  });
+  const [sectionInstance, setSectionInstance] = useState(null);
+
+  const section = useSelector(state => getSpecificSection(state, sectionName))
 
   const {B, h, b, z0, x0, y0} = !section ? {} : section;
 
@@ -45,7 +43,7 @@ function Preview({ sectionName, degree, activeCase, setIdCoordInArray, isBtnPoin
   useEffect(() => {
     if (section) {
       const { centerX, centerY } = findRelativeCenter();
-      const sectionInstance = sectionsObj[sectionName](centerX, centerY);
+      const sectionInstance = {...sectionsObj[sectionName](centerX, centerY)};
 
       sectionInstance.relativeCenterX = centerX;
       sectionInstance.relativeCenterY = centerY;

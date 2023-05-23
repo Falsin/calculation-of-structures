@@ -47,9 +47,8 @@ export default React.memo(function AddSection({ sectionObj, useShapeDataForCircl
     }
   }, [useShapeDataForCirclesMode.getShapeData])
 
-  const drawShape = (centerX, centerY) => {
-    dispatch(addShape(sectionObj.shapeCreator(centerX, centerY, degree, shape, activeCase)))
-  };
+  const drawShape = (centerX, centerY) => 
+    dispatch(addShape(sectionObj.shapeCreator(centerX, centerY, degree, shape, activeCase)));
 
   const changeOrientation = () => setDegree(degree == 270 ? 0 : degree + 90);
 

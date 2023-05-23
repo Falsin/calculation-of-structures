@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, createEntityAdapter } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, createEntityAdapter, createSelector } from "@reduxjs/toolkit";
 
 const shapeAdapter = createEntityAdapter();
 
@@ -33,3 +33,8 @@ export const fetchShapes = (type, shape) => {
     return JSON.parse(response);
   })
 }
+
+export const getSpecificSection = createSelector(
+  [(state, sliceName) => state[sliceName].entities],
+  entities => Object.values(entities).find(elem => (elem.h || elem.B || elem.b) >= 100)
+)

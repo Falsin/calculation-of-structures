@@ -47,13 +47,13 @@ function SourceGroup({setViewBoxSize, useShapeDataForCirclesMode, showCoords, cl
   }, [bottomYLimit, leftXLimit])
 
   const axesList = !arrayAxes.length ? null : arrayAxes.map((elem, id) => 
-    <g key={arrayShapes[id].uniqid}>
-      {elem.map(axisObj => <Axis elem={axisObj} scale={scale} localArrayShapes={arrayShapes}/>)}
+    <g key={arrayShapes[id].id}>
+      {elem.map((axisObj, id) => <Axis elem={axisObj} key={id} scale={scale} localArrayShapes={arrayShapes}/>)}
     </g>
   )
 
   const shapeList = arrayShapes.map((shape, id) => 
-    <ShapeComponent coordObj={coordsArr[id]} showCoords={showCoords} scale={scale} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
+    <ShapeComponent key={shape.id} coordObj={coordsArr[id]} showCoords={showCoords} scale={scale} useShapeDataForCirclesMode={useShapeDataForCirclesMode} />
   )
 
   return <g className={className} style={{visibility: visible.current ? "visible" : "hidden"}}>
